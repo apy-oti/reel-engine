@@ -37,3 +37,8 @@ browser-window visuals per beat, glowing step labels, cursor clicks, CTA end car
 big (kinetic text, lines split by |), inbox, flow, email, stat, image (file in the reel folder), html (raw).
 Options per visual: url (address bar), h (window height), top, zoom [[progress, scale, x, y], ...], cursor {x, y, click}.
 See reels/2026-11-explainer-3-flows/reel.json.
+
+## Hooks
+Every explainer starts with a random hook clip from `hooks/` (never repeats until all were used; tracked in hooks/used.json).
+Add hooks: `python3 tools/add_hooks.py clip1.mp4 compilation.mp4` (long videos are split at scene changes), then commit.
+Per reel: "hook_text" (big line on the hook), "hook": false (no hook) or "hook": "tree-smash" (force one).

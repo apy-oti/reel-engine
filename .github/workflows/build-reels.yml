@@ -77,3 +77,14 @@ jobs:
             gh release upload "$id" "$f" --clobber
             echo "PUBLIC_URL https://github.com/${{ github.repository }}/releases/download/$id/$id.mp4"
           done
+
+      - name: Remember used hooks
+        if: steps.pick.outputs.count != '0'
+        run: |
+          git config user.name "reel-bot"
+          git config user.email "reel-bot@users.noreply.github.com"
+          git add hooks/used.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Update used hooks [skip ci]"
+            for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done
+          fi

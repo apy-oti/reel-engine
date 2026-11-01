@@ -10,7 +10,7 @@ reel.json:
 Each scene's line starts when the scene starts. If a line is longer than its scene,
 the scene is rendered longer (it holds on its last frame) so voice and visuals stay together.
 """
-import glob, hashlib, json, os, subprocess, sys, urllib.request
+import glob, hashlib, json, os, re, subprocess, sys, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -88,6 +88,29 @@ def hit_events(hp, offset):
     return out
 
 
+def pick_hook():
+    """Random hook from hooks/, never repeating until every hook was used once. Set "hook": false to skip,
+    or "hook": "name" to force one."""
+    if cfg.get("hook", True) is False: return None
+    clips = sorted(glob.glob(os.path.join(ROOT, "hooks", "*.webm")))
+    if not clips: return None
+    if isinstance(cfg.get("hook"), str):
+        m = [c for c in clips if cfg["hook"] in os.path.basename(c)]
+        if m: return m[0]
+    up = os.path.join(ROOT, "hooks", "used.json")
+    used = json.load(open(up)) if os.path.exists(up) else {}
+    if rid in used and os.path.exists(os.path.join(ROOT, "hooks", used[rid])):  # rebuild keeps its hook
+        return os.path.join(ROOT, "hooks", used[rid])
+    taken = set(used.values())
+    free = [c for c in clips if os.path.basename(c) not in taken] or clips
+    if len(free) == len(clips): used = {}  # new round
+    import random
+    c = random.Random(rid).choice(free)
+    used[rid] = os.path.basename(c)
+    json.dump(used, open(up, "w"), indent=1)
+    return c
+
+
 def explainer():
     """Faceless explainer: one voice track with word timings, captions, UI visuals, end card."""
     import base64
@@ -130,6 +153,12 @@ def explainer():
     end_start = round(voice_end + 0.35, 3)
     total = round(end_start + float(cta.get("seconds", 2.6)) if cta else voice_end + 0.8, 3)
     tm = {"words": words, "beats": starts, "voice_end": round(voice_end, 3), "end_start": end_start, "duration": total}
+    hook = pick_hook()
+    if hook:
+        first = re.split(r"(?<=[.!?])\s", texts[0])[0]
+        tm["hook"] = {"src": "/" + os.path.relpath(hook, ROOT), "dur": round(min(duration(hook), float(cfg.get("hook_max", 4.5))), 3),
+                      "text": cfg.get("hook_text", first).rstrip(".")}
+        print("hook:", os.path.basename(hook), tm["hook"]["dur"], flush=True)
     tpath = os.path.join(work, "timing.json"); json.dump(tm, open(tpath, "w"))
     rel_t = os.path.relpath(tpath, ROOT)
     # render in parallel chunks
@@ -145,6 +174,11 @@ def explainer():
     silent = os.path.join(work, "video.mp4")
     run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", silent])
     ev = [(LEAD, voice, 1.0)]
+    if hook:
+        ha = hook[:-5] + ".mp3"
+        if os.path.exists(ha): ev.append((0.0, ha, cfg.get("hook_volume", 0.55)))
+        if cfg.get("sfx", True) and not os.environ.get("NO_VOICE"):
+            ev.append((max(tm["hook"]["dur"] - 0.2, 0), sfx_file(DEFAULT_SFX["cut"], 1.0), cfg.get("sfx_volume", 0.45)))
     if not os.environ.get("NO_VOICE") and cfg.get("sfx", True):
         sv = cfg.get("sfx_volume", 0.45)
         for b in starts[1:]:
