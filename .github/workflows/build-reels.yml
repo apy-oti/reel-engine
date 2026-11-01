@@ -10,10 +10,13 @@ on:
         description: "Folder to build, e.g. reels/2026-11-test-nl-promo (empty = all changed in last commit)"
         required: false
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,6 +53,7 @@ jobs:
         if: steps.pick.outputs.count != '0'
         env:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          JOBS: "4"
         run: |
           while read -r d; do python3 build_reel.py "$d"; done < todo.txt
 
@@ -60,3 +64,15 @@ jobs:
           name: reels
           path: out/*.mp4
           retention-days: 90
+
+      - name: Publish videos (public links for Metricool)
+        if: steps.pick.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for f in out/*.mp4; do
+            id=$(basename "$f" .mp4)
+            gh release view "$id" >/dev/null 2>&1 || gh release create "$id" --title "$id" --notes "Reel $id" --latest=false
+            gh release upload "$id" "$f" --clobber
+            echo "PUBLIC_URL https://github.com/${{ github.repository }}/releases/download/$id/$id.mp4"
+          done
