@@ -1,0 +1,160 @@
+{
+  "type": "explainer",
+  "title": "Stop met alleen kortingen sturen",
+  "voice_id": "EXAVITQu4vr4xnSDxMaL",
+  "music": "music/promo-funk.mp3",
+  "music_volume": 0.12,
+  "cta": {
+    "kicker": "Reageer met",
+    "word": "IDEE",
+    "sub": "en ik stuur je 5 mail ideeën zonder korting",
+    "seconds": 2.8
+  },
+  "beats": [
+    {
+      "say": "Elke mail van je webshop is een korting? Dan train je klanten om te wachten.",
+      "visual": {
+        "kind": "inbox",
+        "url": "mail.google.com",
+        "title": "Inbox",
+        "note": "allemaal van 1 shop",
+        "rows": [
+          {
+            "from": "Webshop",
+            "subject": "20% korting dit weekend!",
+            "time": "vr"
+          },
+          {
+            "from": "Webshop",
+            "subject": "Laatste kans: 25% korting",
+            "time": "zo"
+          },
+          {
+            "from": "Webshop",
+            "subject": "Black Friday: 30% op alles",
+            "time": "di"
+          },
+          {
+            "from": "Webshop",
+            "subject": "Nog 15% korting voor jou",
+            "time": "do"
+          }
+        ],
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1.08,
+            -20,
+            -10
+          ]
+        ]
+      }
+    },
+    {
+      "say": "Niemand koopt nog aan volle prijs. En je marge verdwijnt.",
+      "visual": {
+        "kind": "big",
+        "text": "JE MARGE|VERDWIJNT.",
+        "accent": 1
+      }
+    },
+    {
+      "say": "Stuur in plaats daarvan iets wat ze willen lezen. Drie ideeën.",
+      "visual": {
+        "kind": "big",
+        "text": "3 IDEEËN|ZONDER|KORTING.",
+        "accent": 0
+      }
+    },
+    {
+      "say": "Eén. Het verhaal achter je product. Waar komt deze koffie vandaan, en wie maakte hem?",
+      "label": "1. HET VERHAAL",
+      "visual": {
+        "kind": "email",
+        "url": "inbox",
+        "color": "#2f5d3a",
+        "hero": "Van boer tot kop",
+        "headline": "Maak kennis met Abebe",
+        "body": "Hij teelt onze Yirgacheffe op 2000 meter hoogte. Dit is zijn verhaal.",
+        "button": "Lees het verhaal",
+        "h": 860,
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1.15,
+            -70,
+            -100
+          ]
+        ]
+      }
+    },
+    {
+      "say": "Twee. Een tip. Hoe zet je de perfecte filterkoffie, of welke wijn past bij stoofvlees?",
+      "label": "2. EEN TIP",
+      "visual": {
+        "kind": "flow",
+        "url": "jouwwebshop.be/tips",
+        "title": "De perfecte filterkoffie",
+        "h": 860,
+        "steps": [
+          {
+            "type": "trigger",
+            "text": "15 gram koffie",
+            "sub": "Grof gemalen"
+          },
+          {
+            "type": "wait",
+            "text": "250 ml water van 94 graden"
+          },
+          {
+            "type": "email",
+            "text": "30 seconden laten bloeien"
+          },
+          {
+            "type": "split",
+            "text": "Klaar in 3 minuten"
+          }
+        ]
+      }
+    },
+    {
+      "say": "Drie. Iets nieuws. Een nieuwe oogst of een fles die net binnen is. Exclusief voor je lijst.",
+      "label": "3. IETS NIEUWS",
+      "visual": {
+        "kind": "email",
+        "url": "inbox",
+        "color": "#8b1e3f",
+        "hero": "Net binnen",
+        "headline": "Eerst voor jou: de nieuwe oogst",
+        "body": "Slechts 60 flessen. Je lijst krijgt 24 uur voorrang.",
+        "button": "Bekijk de fles",
+        "h": 860,
+        "cursor": {
+          "x": 300,
+          "y": 760,
+          "click": 0.75
+        }
+      }
+    },
+    {
+      "say": "Zo verkoop je aan volle prijs. En blijven klanten je mails openen.",
+      "visual": {
+        "kind": "big",
+        "text": "VOLLE PRIJS.|MEER OPENS.",
+        "accent": 0
+      }
+    }
+  ]
+}

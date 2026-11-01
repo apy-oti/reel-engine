@@ -1,0 +1,139 @@
+{
+  "type": "explainer",
+  "title": "Instagram is niet van jou",
+  "voice_id": "EXAVITQu4vr4xnSDxMaL",
+  "music": "music/minimal-ambient.mp3",
+  "music_volume": 0.16,
+  "cta": {
+    "kicker": "Reageer met",
+    "word": "LIJST",
+    "sub": "en ik toon je hoe je de eerste 100 inschrijvingen haalt",
+    "seconds": 2.8
+  },
+  "beats": [
+    {
+      "say": "Je hebt drieduizend volgers op Instagram. Maar ze zijn niet van jou.",
+      "visual": {
+        "kind": "big",
+        "text": "3000 VOLGERS.|NIET VAN|JOU.",
+        "accent": 2
+      }
+    },
+    {
+      "say": "Je post zien gemiddeld maar een klein deel van je volgers. De rest ziet niets.",
+      "visual": {
+        "kind": "stat",
+        "url": "instagram.com/insights",
+        "label": "Bereik van je laatste post, 3000 volgers",
+        "value": 214,
+        "suffix": "",
+        "h": 640,
+        "trend": [
+          9,
+          8,
+          8,
+          7,
+          6,
+          6,
+          5,
+          5,
+          4,
+          4
+        ]
+      }
+    },
+    {
+      "say": "En morgen verandert het algoritme weer. Of erger, je account is weg.",
+      "visual": {
+        "kind": "html",
+        "url": "instagram.com",
+        "h": 760,
+        "html": "<div style='height:760px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fafafa;text-align:center;padding:60px;box-sizing:border-box'><div style='font:120px IB;color:#ccc'>!</div><div style='font:44px IB;color:#111;margin-top:10px'>Je account is tijdelijk geblokkeerd</div><div style='font:28px IM;color:#777;margin-top:20px;line-height:1.4'>We hebben activiteit gezien die mogelijk in strijd is met onze richtlijnen.</div></div>",
+        "zoom": [
+          [
+            0,
+            1.1,
+            -40,
+            -30
+          ],
+          [
+            1,
+            1,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "say": "Je e-maillijst is wel van jou. Elke mail komt aan. Geen algoritme ertussen.",
+      "label": "JOUW LIJST",
+      "visual": {
+        "kind": "inbox",
+        "url": "mail.google.com",
+        "title": "Inbox",
+        "note": "",
+        "rows": [
+          {
+            "from": "Jouw wijnhuis",
+            "subject": "Nieuw binnen: 3 natuurwijnen voor het weekend",
+            "time": "10:00",
+            "unread": true
+          },
+          {
+            "from": "Bol.com",
+            "subject": "Je pakket is onderweg",
+            "time": "08:12"
+          },
+          {
+            "from": "Spotify",
+            "subject": "Je mix van de week",
+            "time": "07:40"
+          }
+        ],
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1.3,
+            -40,
+            -40
+          ]
+        ],
+        "cursor": {
+          "x": 420,
+          "y": 130,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Dus zet je volgers om naar inschrijvers. Een pop-up met een reden om in te schrijven.",
+      "label": "POP-UP",
+      "visual": {
+        "kind": "html",
+        "url": "jouwwijnhuis.be",
+        "h": 860,
+        "html": "<div style='position:relative;height:860px;background:#2a1a1f'><div style='position:absolute;inset:0;background:linear-gradient(#3b2228,#1b0f12)'></div><div style='position:absolute;left:110px;top:150px;width:740px;background:#fff;border-radius:18px;padding:50px;box-sizing:border-box;text-align:center'><div style='font:48px IB;color:#111'>Proef eerst, beslis dan</div><div style='font:28px IM;color:#555;margin-top:18px;line-height:1.4'>Schrijf je in en krijg onze wijngids met 5 flessen onder de 15 euro.</div><div style='margin-top:34px;border:2px solid #ddd;border-radius:10px;padding:22px;font:26px IM;color:#999;text-align:left'>jouw@email.be</div><div style='margin-top:20px;background:#8b1e3f;color:#fff;border-radius:10px;padding:24px;font:30px IBD'>Stuur mij de gids</div></div></div>",
+        "cursor": {
+          "x": 480,
+          "y": 640,
+          "click": 0.75
+        }
+      }
+    },
+    {
+      "say": "Volgers kunnen verdwijnen. Een lijst blijft van jou.",
+      "visual": {
+        "kind": "big",
+        "text": "VOLGERS VERDWIJNEN.|JE LIJST|BLIJFT.",
+        "accent": 2
+      }
+    }
+  ]
+}
