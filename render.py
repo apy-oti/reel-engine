@@ -7,6 +7,7 @@ page_name, out = sys.argv[1], sys.argv[2]
 FPS = int(os.environ.get("FPS","60"))
 mode = sys.argv[3] if len(sys.argv) > 3 else "video"   # "video" or comma list of stills
 DUR = float(sys.argv[4]) if len(sys.argv) > 4 else 4.0
+START = float(os.environ.get("START", "0"))
 
 class Q(SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
@@ -31,12 +32,12 @@ with sync_playwright() as p:
                            "-movflags", "+faststart", tmp], stdin=subprocess.PIPE)
     n = int(DUR * FPS); t0 = time.time()
     for i in range(n):
-        pg.evaluate(f"window.renderAt({i / FPS})")
+        pg.evaluate(f"window.renderAt({START + i / FPS})")
         ff.stdin.write(pg.screenshot(type="jpeg", quality=92, timeout=180000))
         if i % 30 == 0: print(i, round(time.time() - t0, 1), flush=True)
     ff.stdin.close()
     import json as _j
     hits = pg.evaluate("window.__HITS || {}")
-    _j.dump({k: v for k, v in hits.items() if 0 <= float(k) <= DUR}, open(out.replace(".mp4", ".hits.json"), "w"))
+    _j.dump({k: v for k, v in hits.items() if os.environ.get("HITS_ALL") or 0 <= float(k) <= DUR}, open(out.replace(".mp4", ".hits.json"), "w"))
     if ff.wait() == 0: os.replace(tmp, out)
     b.close()

@@ -1,0 +1,160 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:IB;src:url(/InterDisplay-Black.otf)}
+@font-face{font-family:IBD;src:url(/InterDisplay-Bold.otf)}
+@font-face{font-family:ISB;src:url(/InterDisplay-SemiBold.otf)}
+@font-face{font-family:IM;src:url(/Inter-Medium.otf)}
+@font-face{font-family:MO;src:url(/DejaVuSansMono.ttf)}
+:root{--coral:#ff5c36;--glow:#3dff7a;--bg:#0a0a0c}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--bg);font-family:IM,sans-serif;color:#fff}
+#stage{position:absolute;inset:0;overflow:hidden}
+#bgglow{position:absolute;inset:-200px;background:radial-gradient(800px 700px at 50% 45%,rgba(255,92,54,.16),transparent 70%)}
+.beat{position:absolute;inset:0;display:none}
+.win{position:absolute;left:60px;width:960px;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08)}
+.bar{height:58px;background:#1d1d22;display:flex;align-items:center;gap:12px;padding:0 22px}
+.dot{width:16px;height:16px;border-radius:50%}
+.addr{flex:1;margin-left:18px;height:34px;border-radius:9px;background:#2b2b31;color:#a9a9b3;font:20px IM;display:flex;align-items:center;padding:0 16px}
+.view{position:relative;overflow:hidden;background:#fff;color:#111}
+.cam{position:absolute;left:0;top:0;width:960px;transform-origin:0 0}
+.label{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:22px 38px;border:3px solid var(--glow);border-radius:14px;background:rgba(10,30,14,.85);
+  font:52px IB;letter-spacing:-1px;white-space:nowrap;color:#fff;box-shadow:0 0 30px rgba(61,255,122,.55),inset 0 0 24px rgba(61,255,122,.25);text-shadow:0 0 18px rgba(61,255,122,.6)}
+#cap{position:absolute;left:0;right:0;top:1480px;text-align:center;pointer-events:none}
+#cap span.chunk{display:inline-block;background:#000;padding:14px 26px;border-radius:14px;font:68px IB;letter-spacing:-1.5px;line-height:1.05;max-width:900px}
+#cap b{font-weight:normal}
+#cap b.on{color:var(--coral)}
+#brand{position:absolute;left:0;right:0;bottom:120px;text-align:center;font:28px MO;letter-spacing:4px;color:#6f6f78}
+#cursor{position:absolute;width:44px;height:44px;display:none;z-index:5;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+#ring{position:absolute;border:4px solid var(--coral);border-radius:50%;display:none;z-index:4}
+#blur{position:absolute;inset:0;pointer-events:none}
+/* components */
+.inbox .row{display:flex;gap:22px;align-items:center;padding:26px 34px;border-bottom:1px solid #eee;font:28px IM}
+.inbox .row .from{width:250px;font:28px ISB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inbox .row .subj{flex:1;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inbox .row.unread .from,.inbox .row.unread .subj{color:#111;font-family:IBD}
+.inbox .row .time{color:#999;font-size:24px}
+.inbox .head{padding:28px 34px;font:34px IBD;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
+.flow{background:#f6f6f8;padding:40px 0 60px;display:flex;flex-direction:column;align-items:center}
+.flow .title{font:30px IBD;margin-bottom:30px;color:#222}
+.node{width:600px;border-radius:16px;background:#fff;border:2px solid #e3e3ea;padding:24px 28px;display:flex;gap:20px;align-items:center;font:28px ISB;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.node .ic{width:58px;height:58px;border-radius:12px;display:flex;align-items:center;justify-content:center;font:28px IB;color:#fff;flex:none}
+.node .sub{font:22px IM;color:#888;margin-top:4px}
+.link{width:3px;height:44px;background:#cfcfd8}
+.email{background:#f2f2f4;padding:40px 0;display:flex;justify-content:center}
+.email .card{width:720px;background:#fff;border-radius:10px;overflow:hidden}
+.email .hero{height:300px;display:flex;align-items:center;justify-content:center;font:56px IB;color:#fff;text-align:center;padding:0 40px}
+.email .body{padding:40px 50px;font:28px IM;line-height:1.45;color:#333}
+.email h2{font:44px IB;margin:0 0 18px;color:#111;letter-spacing:-1px}
+.email .btn{display:inline-block;margin-top:26px;padding:22px 44px;border-radius:10px;color:#fff;font:28px IBD}
+.stat{background:#0f0f13;color:#fff;padding:70px 60px 60px}
+.stat .lbl{font:30px IM;color:#9a9aa5}
+.stat .num{font:150px IB;letter-spacing:-5px;margin:10px 0 20px}
+.stat svg{width:100%;height:220px}
+.big{position:absolute;left:60px;right:60px;top:560px;text-align:center;font:150px IB;letter-spacing:-5px;line-height:.95}
+.end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#ff5c36 0%,#b3260b 100%);text-align:center}
+.end .k{font:56px ISB;opacity:.9}
+.end .w{font:200px IB;letter-spacing:-6px;margin:10px 0;background:#000;color:#fff;padding:10px 50px;border-radius:24px}
+.end .s{font:50px IBD;max-width:860px;line-height:1.15}
+.end .h{position:absolute;bottom:160px;font:32px MO;letter-spacing:4px;opacity:.85}
+</style></head><body>
+<div id="stage"><div id="bgglow"></div></div>
+<div id="cap"></div><div id="brand">@OWNTHEINBOX</div>
+<svg id="cursor" viewBox="0 0 24 24"><path d="M4 2l16 10-7 1.5L9.5 21z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
+<div id="ring"></div>
+<script>
+const Q = new URLSearchParams(location.search), REEL = Q.get('reel'), TIMING = Q.get('timing');
+const cl = x => Math.max(0, Math.min(1, x)), lerp = (a, b, t) => a + (b - a) * t;
+const eOut = t => 1 - Math.pow(1 - cl(t), 3), eIO = t => { t = cl(t); return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2 };
+const back = t => { t = cl(t); const c = 1.7; return 1 + (c+1)*Math.pow(t-1,3) + c*Math.pow(t-1,2) };
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+window.__HITS = {};
+const hit = (t, d) => { const k = t.toFixed(3); window.__HITS[k] = Math.max(window.__HITS[k] || 0, d) };
+
+function comp(v) {
+  if (v.kind === 'inbox') return `<div class="inbox"><div class="head"><span>${esc(v.title||'Inbox')}</span><span style="color:#999;font:26px IM">${esc(v.note||'')}</span></div>` +
+    v.rows.map((r,i) => `<div class="row ${r.unread?'unread':''}" data-step="${i}"><div class="from">${esc(r.from)}</div><div class="subj">${esc(r.subject)}</div><div class="time">${esc(r.time||'')}</div></div>`).join('') + `</div>`;
+  if (v.kind === 'flow') { const col = {trigger:'#6c47ff',email:'#ff5c36',wait:'#8a8a96',split:'#1aa36f',sms:'#1f7aff'}, ic = {trigger:'⚡',email:'✉',wait:'⏱',split:'⑂',sms:'💬'};
+    return `<div class="flow"><div class="title">${esc(v.title||'Flow')}</div>` + v.steps.map((s,i) => (i?`<div class="link" data-step="${i}"></div>`:'') +
+      `<div class="node" data-step="${i}"><div class="ic" style="background:${col[s.type]||'#444'}">${ic[s.type]||'•'}</div><div><div>${esc(s.text)}</div>${s.sub?`<div class="sub">${esc(s.sub)}</div>`:''}</div></div>`).join('') + `</div>` }
+  if (v.kind === 'email') return `<div class="email"><div class="card"><div class="hero" style="background:${v.color||'#1d1d1f'}">${esc(v.hero||'')}</div><div class="body"><h2>${esc(v.headline)}</h2>${esc(v.body)}<br><span class="btn" style="background:${v.color||'#111'}">${esc(v.button||'Shop nu')}</span></div></div></div>`;
+  if (v.kind === 'stat') return `<div class="stat"><div class="lbl">${esc(v.label)}</div><div class="num" data-to="${v.value}" data-pre="${esc(v.prefix||'')}" data-suf="${esc(v.suffix||'')}">0</div><svg viewBox="0 0 840 220" preserveAspectRatio="none"><path class="spark" d="${spark(v.trend||[2,3,3,5,4,6,8,7,10,13])}" fill="none" stroke="#ff5c36" stroke-width="7" stroke-linecap="round"/></svg></div>`;
+  return v.html || '';
+}
+function spark(a) { const mx = Math.max(...a), mn = Math.min(...a); return a.map((y,i) => `${i?'L':'M'}${(i/(a.length-1)*820+10).toFixed(1)},${(205 - (y-mn)/(mx-mn||1)*190).toFixed(1)}`).join(' ') }
+
+let B = [], WORDS = [], CHUNKS = [], DUR = 0, END = null;
+async function init() {
+  await document.fonts.ready; for (const f of ['IB','IBD','ISB','IM','MO']) await document.fonts.load(`40px ${f}`);
+  const cfg = await (await fetch('/' + REEL + '/reel.json')).json();
+  const tm = await (await fetch('/' + TIMING)).json();
+  WORDS = tm.words; DUR = tm.duration;
+  const st = document.getElementById('stage');
+  cfg.beats.forEach((b, i) => {
+    const el = document.createElement('div'); el.className = 'beat'; const v = b.visual || {};
+    const t0 = tm.beats[i].start, t1 = i + 1 < cfg.beats.length ? tm.beats[i+1].start : tm.voice_end + 0.3;
+    let html = '';
+    if (v.kind === 'big') html = `<div class="big">${(v.text||'').split('|').map((l,j)=>`<div class="bl" style="color:${j===(v.accent??1)?'var(--coral)':'#fff'}">${esc(l)}</div>`).join('')}</div>`;
+    else if (v.kind === 'image') html = `<div class="win" style="top:${v.top||520}px"><div class="bar"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div><div class="addr">${esc(v.url||'')}</div></div><div class="view" style="height:${v.h||760}px"><div class="cam"><img src="/${REEL}/${v.src}" style="width:960px;display:block"></div></div></div>`;
+    else html = `<div class="win" style="top:${v.top||520}px"><div class="bar"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div><div class="addr">${esc(v.url||'')}</div></div><div class="view" style="height:${v.h||760}px"><div class="cam">${comp(v)}</div></div></div>`;
+    if (b.label) html += `<div class="label">${esc(b.label)}</div>`;
+    el.innerHTML = html; st.appendChild(el);
+    const steps = [...el.querySelectorAll('[data-step]')];
+    B.push({ el, v, b, t0, t1, steps, cam: el.querySelector('.cam'), win: el.querySelector('.win'), lab: el.querySelector('.label'),
+             num: el.querySelector('.num'), spark: el.querySelector('.spark'), bls: [...el.querySelectorAll('.bl')] });
+  });
+  // end card
+  if (cfg.cta) { const el = document.createElement('div'); el.className = 'beat';
+    el.innerHTML = `<div class="end"><div class="k">${esc(cfg.cta.kicker||'Reageer met')}</div><div class="w">${esc(cfg.cta.word||'AUDIT')}</div><div class="s">${esc(cfg.cta.sub||'')}</div><div class="h">@OWNTHEINBOX</div></div>`;
+    st.appendChild(el); END = { el, t0: tm.end_start }; }
+  // caption chunks: up to 3 words, break after punctuation
+  let cur = [];
+  WORDS.forEach((w, i) => { cur.push(i); if (cur.length >= 3 || /[.,!?:;]$/.test(w.w) || i === WORDS.length - 1) { CHUNKS.push(cur); cur = [] } });
+  // record sound moments
+  B.forEach(x => { if (x.lab) hit(x.t0 + 0.15, 20);
+    const n = x.steps.length; x.steps.forEach((s, j) => { if (s.classList.contains('link')) return; hit(stepTime(x, j, n), 18) });
+    if (x.v.cursor) hit(x.t0 + (x.v.cursor.click ?? .6) * (x.t1 - x.t0), 14); });
+  window.READY = true;
+}
+const stepTime = (x, j, n) => x.t0 + 0.25 + (j / Math.max(n, 1)) * Math.min(x.t1 - x.t0 - 0.6, n * 0.45);
+
+window.renderAt = t => {
+  const cur = document.getElementById('cursor'), ring = document.getElementById('ring');
+  cur.style.display = 'none'; ring.style.display = 'none';
+  let shown = null;
+  B.forEach((x, i) => {
+    const on = t >= x.t0 && (i + 1 < B.length ? t < B[i+1].t0 : (!END || t < END.t0));
+    x.el.style.display = on ? 'block' : 'none'; if (!on) return; shown = x;
+    const p = cl((t - x.t0) / (x.t1 - x.t0)), a = t - x.t0;
+    // whip-in transition: slide + blur for 0.22s
+    const w = 1 - eOut(a / 0.22);
+    x.el.style.transform = `translateX(${w * 260}px)`; x.el.style.filter = w > 0.01 ? `blur(${w * 28}px)` : 'none';
+    if (x.win) { const s0 = x.v.zoom || [[0, 1, 0, 0], [1, 1.12, -40, -30]];
+      let k = 0; while (k < s0.length - 2 && p > s0[k+1][0]) k++;
+      const A = s0[k], Z = s0[k+1] || A, q = eIO((p - A[0]) / ((Z[0] - A[0]) || 1));
+      const sc = lerp(A[1], Z[1], q), tx = lerp(A[2], Z[2], q), ty = lerp(A[3], Z[3], q);
+      x.cam.style.transform = `translate(${tx}px,${ty}px) scale(${sc})`;
+      const pop = eOut(a / 0.35); x.win.style.transform = `scale(${0.94 + 0.06 * pop})`; x.win.style.opacity = cl(a / 0.15);
+      if (x.v.cursor) { const c = x.v.cursor, ct = c.click ?? .6, mv = eIO((p - (ct - .25)) / .25);
+        const r = x.win.getBoundingClientRect(), vx = r.left, vy = r.top + 58 * (r.height / x.win.offsetHeight);
+        const scale = r.width / 960, X = vx + (c.x * sc + tx) * scale, Y = vy + (c.y * sc + ty) * scale;
+        cur.style.display = 'block'; cur.style.opacity = cl((p - (ct - .3)) / .08); cur.style.left = lerp(X + 160, X, mv) + 'px'; cur.style.top = lerp(Y + 200, Y, mv) + 'px';
+        const ca = (p - ct) * (x.t1 - x.t0); if (ca > 0 && ca < .45) { const rr = 20 + ca * 220; ring.style.display = 'block';
+          Object.assign(ring.style, { left: X - rr + 'px', top: Y - rr + 'px', width: rr * 2 + 'px', height: rr * 2 + 'px', opacity: 1 - ca / .45 }) }
+        cur.style.transform = `scale(${ca > 0 && ca < .12 ? .82 : 1})`; } }
+    const n = x.steps.length;
+    x.steps.forEach((s, j) => { const st = stepTime(x, j, n), q = eOut((t - st) / 0.3); s.style.opacity = q; s.style.transform = `translateY(${(1 - q) * 30}px)` });
+    if (x.num) { const q = eOut((a - .2) / 1.2), to = +x.num.dataset.to; x.num.textContent = x.num.dataset.pre + Math.round(to * q).toLocaleString('nl-BE') + x.num.dataset.suf;
+      const L = x.spark.getTotalLength(); x.spark.style.strokeDasharray = L; x.spark.style.strokeDashoffset = L * (1 - q) }
+    x.bls.forEach((l, j) => { const q = back((a - j * .18) / .35); l.style.transform = `translateY(${(1 - q) * 80}px) scale(${.8 + .2 * q})`; l.style.opacity = cl((a - j * .18) / .15) });
+    if (x.lab) { const q = back((a - .1) / .3); x.lab.style.transform = `translateX(-50%) scale(${q})`; x.lab.style.opacity = cl((a - .1) / .1) }
+  });
+  if (END) { const on = t >= END.t0; END.el.style.display = on ? 'block' : 'none';
+    if (on) { const a = t - END.t0, q = back(a / .4); END.el.querySelector('.w').style.transform = `scale(${q})`; END.el.style.opacity = cl(a / .12) } }
+  // captions
+  const cap = document.getElementById('cap'); let html = '';
+  if (!END || t < END.t0) for (let c = 0; c < CHUNKS.length; c++) { const ws = CHUNKS[c], s = WORDS[ws[0]].s, e = c + 1 < CHUNKS.length ? WORDS[CHUNKS[c+1][0]].s : WORDS[ws.at(-1)].e + .3;
+    if (t >= s && t < e) { const q = back((t - s) / .18);
+      html = `<span class="chunk" style="transform:scale(${.85 + .15 * q})">` + ws.map(k => `<b class="${t >= WORDS[k].s && t < WORDS[k].e + .05 ? 'on' : ''}">${esc(WORDS[k].w)}</b>`).join(' ') + `</span>`; break } }
+  cap.innerHTML = html;
+};
+init().catch(e => { console.error(e); document.body.innerHTML = '<pre style="color:red;font-size:30px">' + e + '</pre>' });
+</script></body></html>

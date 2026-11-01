@@ -30,3 +30,10 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy out.mp4
 2. Push. The "Build reels" workflow makes the voice-over with ElevenLabs, renders, mixes, and uploads the mp4s.
 3. Download from Actions -> latest run -> Artifacts -> reels.
 Secret needed: ELEVENLABS_API_KEY. Local run: `python3 build_reel.py reels/<id>` (NO_VOICE=1 to skip voice).
+
+## Explainer reels (faceless, captions)
+`"type": "explainer"` in reel.json. One voice track with word timings (ElevenLabs with-timestamps), bold synced captions,
+browser-window visuals per beat, glowing step labels, cursor clicks, CTA end card. Visual kinds:
+big (kinetic text, lines split by |), inbox, flow, email, stat, image (file in the reel folder), html (raw).
+Options per visual: url (address bar), h (window height), top, zoom [[progress, scale, x, y], ...], cursor {x, y, click}.
+See reels/2026-11-explainer-3-flows/reel.json.

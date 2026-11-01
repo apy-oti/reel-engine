@@ -21,7 +21,7 @@ work = os.path.join(ROOT, "build", rid)
 out_dir = os.path.join(ROOT, "out")
 os.makedirs(work, exist_ok=True); os.makedirs(out_dir, exist_ok=True)
 env = dict(os.environ, FPS=os.environ.get("FPS", "30"), CRF=os.environ.get("CRF", "21"))
-scenes = cfg["scenes"]
+scenes = cfg.get("scenes", [])
 SARAH = "EXAVITQu4vr4xnSDxMaL"
 
 
@@ -56,59 +56,6 @@ def tts(text, path, prev_text=None, next_text=None):
         f.write(r.read())
 
 
-# 1. Voice lines, one per scene
-use_voice = not os.environ.get("NO_VOICE")
-lines = [s.get("say", "").strip() for s in scenes]
-clips = [None] * len(scenes)
-if use_voice:
-    for i, text in enumerate(lines):
-        if not text: continue
-        p = os.path.join(work, f"say{i:02d}.mp3")
-        prev_t = " ".join(t for t in lines[:i] if t)[-300:] or None
-        next_t = " ".join(t for t in lines[i + 1:] if t)[:300] or None
-        tts(text, p, prev_t, next_t)
-        clips[i] = p
-
-# 2. Final scene lengths: long enough for their line
-for i, s in enumerate(scenes):
-    s["_at"] = float(s.get("say_at", 0.25))
-    s["_len"] = float(s["seconds"])
-    if clips[i]:
-        need = s["_at"] + duration(clips[i]) + 0.35
-        if need > s["_len"]:
-            print(f"scene {i+1}: line needs {need:.1f}s, extending from {s['_len']:.1f}s", flush=True)
-            s["_len"] = round(need, 2)
-
-# 3. Render scenes (a scene shown longer than designed holds its final frame)
-def render(i_s):
-    i, s = i_s
-    out = os.path.join(work, f"scene{i:02d}.mp4")
-    run(["python3", os.path.join(ROOT, "render.py"), f"{folder}/{s['file']}", out, "video", str(s["seconds"])],
-        env=dict(env, PORT=str(8800 + i)))
-    extra = s["_len"] - float(s["seconds"])
-    if extra > 0.01:
-        held = out.replace(".mp4", ".hold.mp4")
-        run(["ffmpeg", "-y", "-loglevel", "error", "-i", out, "-vf", f"tpad=stop_mode=clone:stop_duration={extra:.3f}",
-             "-c:v", "libx264", "-preset", "veryfast", "-crf", env["CRF"], "-pix_fmt", "yuv420p", held])
-        os.replace(held, out)
-    return out
-with ThreadPoolExecutor(max_workers=int(os.environ.get("JOBS", "2"))) as ex:
-    parts = list(ex.map(render, enumerate(scenes)))
-
-lst = os.path.join(work, "list.txt")
-open(lst, "w").write("".join(f"file '{p}'\n" for p in parts))
-silent = os.path.join(work, "video.mp4")
-run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", silent])
-vlen = duration(silent)
-
-# 4. Audio: each line placed at its scene start, music underneath with fade in/out
-music = cfg.get("music")
-if music == "auto":
-    tracks = sorted(glob.glob(os.path.join(ROOT, "music", "*.mp3")))
-    music = tracks[int(hashlib.md5(rid.encode()).hexdigest(), 16) % len(tracks)] if tracks else None
-elif music:
-    music = os.path.join(ROOT, music)
-
 # Sound effects: ElevenLabs sound generation, one file per distinct prompt
 DEFAULT_SFX = {
     "cut": "short fast cinematic whoosh transition, clean, no music",
@@ -129,31 +76,165 @@ def sfx_file(prompt, secs):
         f.write(r.read())
     return p
 
-# events: (time in reel, file, volume)
-events = []
-t = 0.0
-for i, s in enumerate(scenes):
-    if clips[i]:
-        events.append((t + s["_at"], clips[i], 1.0))
-    if use_voice and cfg.get("sfx", True):
-        if i > 0:  # whoosh just before each cut lands
-            events.append((max(t - 0.25, 0), sfx_file(cfg.get("sfx_cut", DEFAULT_SFX["cut"]), 1.0), cfg.get("sfx_volume", 0.5)))
-        # sounds on the animation hits recorded while rendering (dots landing, words snapping in)
-        hp = os.path.join(work, f"scene{i:02d}.hits.json")
-        if cfg.get("hit_sfx", True) and os.path.exists(hp):
-            last = -1.0
-            for ht, decay in sorted((float(a), b) for a, b in json.load(open(hp)).items()):
-                if ht - last < 0.08: continue
-                last = ht
-                kind = "tick" if decay >= 18 else "click" if decay >= 12 else "thud"
-                events.append((t + ht, sfx_file(DEFAULT_SFX[kind], 0.5 if kind != "thud" else 0.8),
-                               cfg.get("hit_volume", 0.35)))
-        for e in s.get("sfx", []):  # optional extra effects: {"t": 1.2, "prompt": "..."} or {"t":1.2,"type":"hit"}
-            prompt = e.get("prompt") or DEFAULT_SFX[e.get("type", "hit")]
-            events.append((t + float(e["t"]), sfx_file(prompt, float(e.get("seconds", 1.5))), e.get("volume", cfg.get("sfx_volume", 0.5))))
-    t += s["_len"]
-if use_voice and cfg.get("sfx", True) and not any(s.get("sfx") for s in scenes[-1:]):
-    events.append((t - scenes[-1]["_len"] + 0.1, sfx_file(DEFAULT_SFX["hit"], 1.5), cfg.get("sfx_volume", 0.5)))
+
+def hit_events(hp, offset):
+    out, last = [], -1.0
+    if not (cfg.get("hit_sfx", True) and os.path.exists(hp)): return out
+    for ht, decay in sorted((float(a), b) for a, b in json.load(open(hp)).items()):
+        if ht - last < 0.08: continue
+        last = ht
+        kind = "tick" if decay >= 18 else "click" if decay >= 12 else "thud"
+        out.append((offset + ht, sfx_file(DEFAULT_SFX[kind], 0.5 if kind != "thud" else 0.8), cfg.get("hit_volume", 0.35)))
+    return out
+
+
+def explainer():
+    """Faceless explainer: one voice track with word timings, captions, UI visuals, end card."""
+    import base64
+    LEAD = 0.3
+    beats = cfg["beats"]
+    texts = [b["say"].strip() for b in beats]
+    full = " ".join(texts)
+    voice = os.path.join(work, "voice.mp3")
+    if os.environ.get("FAKE_TTS"):
+        cs = [i / 14 for i in range(len(full))]; ce = [c + 1 / 14 for c in cs]
+        run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", f"sine=f=330:d={len(full)/14:.2f}", voice])
+    else:
+        body = {"text": full, "model_id": cfg.get("model_id", "eleven_multilingual_v2"),
+                "voice_settings": cfg.get("voice_settings", {"stability": 0.5, "similarity_boost": 0.8, "style": 0.25, "use_speaker_boost": True})}
+        if cfg.get("language_code"): body["language_code"] = cfg["language_code"]
+        req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{cfg.get('voice_id', SARAH)}/with-timestamps?output_format=mp3_44100_128",
+                                     data=json.dumps(body).encode(),
+                                     headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=240) as r:
+            res = json.loads(r.read())
+        open(voice, "wb").write(base64.b64decode(res["audio_base64"]))
+        al = res.get("normalized_alignment") or res["alignment"]
+        if "".join(al["characters"]) != full: al = res["alignment"]
+        cs, ce = al["character_start_times_seconds"], al["character_end_times_seconds"]
+    # words with times
+    words, i = [], 0
+    while i < len(full):
+        if full[i] == " ": i += 1; continue
+        j = i
+        while j < len(full) and full[j] != " ": j += 1
+        words.append({"w": full[i:j], "s": round(cs[min(i, len(cs)-1)] + LEAD, 3), "e": round(ce[min(j-1, len(ce)-1)] + LEAD, 3)})
+        i = j
+    # beat starts (char offset of each beat)
+    starts, off = [], 0
+    for k, tx in enumerate(texts):
+        starts.append({"start": 0.0 if k == 0 else round(max(cs[min(off, len(cs)-1)] + LEAD - 0.12, 0), 3)})
+        off += len(tx) + 1
+    voice_end = duration(voice) + LEAD
+    cta = cfg.get("cta")
+    end_start = round(voice_end + 0.35, 3)
+    total = round(end_start + float(cta.get("seconds", 2.6)) if cta else voice_end + 0.8, 3)
+    tm = {"words": words, "beats": starts, "voice_end": round(voice_end, 3), "end_start": end_start, "duration": total}
+    tpath = os.path.join(work, "timing.json"); json.dump(tm, open(tpath, "w"))
+    rel_t = os.path.relpath(tpath, ROOT)
+    # render in parallel chunks
+    jobs = int(os.environ.get("JOBS", "2")); n = max(1, min(jobs, int(total // 6) or 1)); seg = total / n
+    def rpart(k):
+        out = os.path.join(work, f"part{k:02d}.mp4")
+        run(["python3", os.path.join(ROOT, "render.py"), f"explainer.html?reel={folder}&timing={rel_t}", out, "video", f"{seg:.3f}"],
+            env=dict(env, PORT=str(8850 + k), START=f"{k*seg:.4f}", HITS_ALL="1"))
+        return out
+    with ThreadPoolExecutor(max_workers=jobs) as ex:
+        parts = list(ex.map(rpart, range(n)))
+    lst = os.path.join(work, "list.txt"); open(lst, "w").write("".join(f"file '{p}'\n" for p in parts))
+    silent = os.path.join(work, "video.mp4")
+    run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", silent])
+    ev = [(LEAD, voice, 1.0)]
+    if not os.environ.get("NO_VOICE") and cfg.get("sfx", True):
+        sv = cfg.get("sfx_volume", 0.45)
+        for b in starts[1:]:
+            ev.append((max(b["start"] - 0.2, 0), sfx_file(DEFAULT_SFX["cut"], 1.0), sv))
+        if cta:
+            ev.append((max(end_start - 0.2, 0), sfx_file(DEFAULT_SFX["cut"], 1.0), sv))
+            ev.append((end_start + 0.05, sfx_file(DEFAULT_SFX["hit"], 1.5), sv))
+        ev += hit_events(os.path.join(work, "part00.hits.json"), 0.0)
+    return silent, duration(silent), ev
+
+
+def scene_reel():
+    # 1. Voice lines, one per scene
+    use_voice = not os.environ.get("NO_VOICE")
+    lines = [s.get("say", "").strip() for s in scenes]
+    clips = [None] * len(scenes)
+    if use_voice:
+        for i, text in enumerate(lines):
+            if not text: continue
+            p = os.path.join(work, f"say{i:02d}.mp3")
+            prev_t = " ".join(t for t in lines[:i] if t)[-300:] or None
+            next_t = " ".join(t for t in lines[i + 1:] if t)[:300] or None
+            tts(text, p, prev_t, next_t)
+            clips[i] = p
+
+    # 2. Final scene lengths: long enough for their line
+    for i, s in enumerate(scenes):
+        s["_at"] = float(s.get("say_at", 0.25))
+        s["_len"] = float(s["seconds"])
+        if clips[i]:
+            need = s["_at"] + duration(clips[i]) + 0.35
+            if need > s["_len"]:
+                print(f"scene {i+1}: line needs {need:.1f}s, extending from {s['_len']:.1f}s", flush=True)
+                s["_len"] = round(need, 2)
+
+    # 3. Render scenes (a scene shown longer than designed holds its final frame)
+    def render(i_s):
+        i, s = i_s
+        out = os.path.join(work, f"scene{i:02d}.mp4")
+        run(["python3", os.path.join(ROOT, "render.py"), f"{folder}/{s['file']}", out, "video", str(s["seconds"])],
+            env=dict(env, PORT=str(8800 + i)))
+        extra = s["_len"] - float(s["seconds"])
+        if extra > 0.01:
+            held = out.replace(".mp4", ".hold.mp4")
+            run(["ffmpeg", "-y", "-loglevel", "error", "-i", out, "-vf", f"tpad=stop_mode=clone:stop_duration={extra:.3f}",
+                 "-c:v", "libx264", "-preset", "veryfast", "-crf", env["CRF"], "-pix_fmt", "yuv420p", held])
+            os.replace(held, out)
+        return out
+    with ThreadPoolExecutor(max_workers=int(os.environ.get("JOBS", "2"))) as ex:
+        parts = list(ex.map(render, enumerate(scenes)))
+
+    lst = os.path.join(work, "list.txt")
+    open(lst, "w").write("".join(f"file '{p}'\n" for p in parts))
+    silent = os.path.join(work, "video.mp4")
+    run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", silent])
+    vlen = duration(silent)
+
+    # events: (time in reel, file, volume)
+    events = []
+    t = 0.0
+    for i, s in enumerate(scenes):
+        if clips[i]:
+            events.append((t + s["_at"], clips[i], 1.0))
+        if use_voice and cfg.get("sfx", True):
+            if i > 0:  # whoosh just before each cut lands
+                events.append((max(t - 0.25, 0), sfx_file(cfg.get("sfx_cut", DEFAULT_SFX["cut"]), 1.0), cfg.get("sfx_volume", 0.5)))
+            # sounds on the animation hits recorded while rendering (dots landing, words snapping in)
+            events += hit_events(os.path.join(work, f"scene{i:02d}.hits.json"), t)
+            for e in s.get("sfx", []):  # optional extra effects: {"t": 1.2, "prompt": "..."} or {"t":1.2,"type":"hit"}
+                prompt = e.get("prompt") or DEFAULT_SFX[e.get("type", "hit")]
+                events.append((t + float(e["t"]), sfx_file(prompt, float(e.get("seconds", 1.5))), e.get("volume", cfg.get("sfx_volume", 0.5))))
+        t += s["_len"]
+    if use_voice and cfg.get("sfx", True) and not any(s.get("sfx") for s in scenes[-1:]):
+        events.append((t - scenes[-1]["_len"] + 0.1, sfx_file(DEFAULT_SFX["hit"], 1.5), cfg.get("sfx_volume", 0.5)))
+
+    return silent, vlen, events
+
+
+if cfg.get("type") == "explainer":
+    silent, vlen, events = explainer()
+else:
+    silent, vlen, events = scene_reel()
+
+# 4. Audio: each line placed at its scene start, music underneath with fade in/out
+music = cfg.get("music")
+if music == "auto":
+    tracks = sorted(glob.glob(os.path.join(ROOT, "music", "*.mp3")))
+    music = tracks[int(hashlib.md5(rid.encode()).hexdigest(), 16) % len(tracks)] if tracks else None
+elif music:
+    music = os.path.join(ROOT, music)
 
 inputs, filters, mix = [], [], []
 k = 0
