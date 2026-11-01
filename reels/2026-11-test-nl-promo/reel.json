@@ -1,14 +1,38 @@
 {
   "title": "Test: NL promo met voice-over",
   "voice_id": "EXAVITQu4vr4xnSDxMaL",
-  "music": "auto",
-  "music_volume": 0.12,
+  "music": "music/promo-funk.mp3",
+  "music_volume": 0.14,
   "scenes": [
-    {"file": "s1.html", "seconds": 4, "say": "Je inbox is stil."},
-    {"file": "s2.html", "seconds": 5, "say": "Ze kwamen langs. Ze gingen weg. En niemand volgde op."},
-    {"file": "s3.html", "seconds": 6, "say": "Dus ik bouw de machine. Welkomstreeks. Verlaten winkelmand. Win-back."},
-    {"file": "s4.html", "seconds": 7, "say": "Die verkoopt voor jou, terwijl jij slaapt."},
-    {"file": "s5.html", "seconds": 4, "say": "Jouw lijst. Jouw merk. Jouw geld."},
-    {"file": "s6.html", "seconds": 4, "say": "Own The Inbox."}
+    {
+      "file": "s1.html",
+      "seconds": 4,
+      "say": "Je inbox is stil."
+    },
+    {
+      "file": "s2.html",
+      "seconds": 5,
+      "say": "Ze kwamen langs. Ze gingen weg. En niemand volgde op."
+    },
+    {
+      "file": "s3.html",
+      "seconds": 6,
+      "say": "Dus ik bouw de machine. Welkomstreeks. Verlaten winkelmand. Win-back."
+    },
+    {
+      "file": "s4.html",
+      "seconds": 7,
+      "say": "Die verkoopt voor jou, terwijl jij slaapt."
+    },
+    {
+      "file": "s5.html",
+      "seconds": 4,
+      "say": "Jouw lijst. Jouw merk. Jouw geld."
+    },
+    {
+      "file": "s6.html",
+      "seconds": 4,
+      "say": "Own The Inbox."
+    }
   ]
 }

@@ -259,4 +259,12 @@ if mix:
          "-movflags", "+faststart", final])
 else:
     os.replace(silent, final)
+
+# keep files small enough for Instagram and Metricool
+if os.path.getsize(final) > 60 * 1024 * 1024:
+    small = final.replace(".mp4", ".small.mp4")
+    run(["ffmpeg", "-y", "-loglevel", "error", "-i", final, "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
+         "-maxrate", "14M", "-bufsize", "28M", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", small])
+    os.replace(small, final)
+    print(f"compressed to {os.path.getsize(final)/1e6:.0f} MB", flush=True)
 print(f"DONE {final} ({vlen:.1f}s)", flush=True)
