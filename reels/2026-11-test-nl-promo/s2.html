@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,INK,CORALHEX,cl,lerp,eOut,eIn,eIO,eExpo,impulse,rng,rr} from '/lib.js';
+const S=await setup({sceneNo:2,tcOffset:4});const {scene,cam,word,canvasPlane,bloom,fx}=S;const rnd=rng(21);
+// envelope tiles
+const tc=document.createElement('canvas');tc.width=256;tc.height=176;{const x=tc.getContext('2d');x.fillStyle='#1a1a20';rr(x,6,6,244,164,18);x.fill();
+ x.strokeStyle='#4a4a56';x.lineWidth=7;rr(x,6,6,244,164,18);x.stroke();x.beginPath();x.moveTo(20,22);x.lineTo(128,100);x.lineTo(236,22);x.stroke()}
+const ttex=new THREE.CanvasTexture(tc);ttex.colorSpace=THREE.SRGBColorSpace;ttex.anisotropy=8;
+const COLS=13,ROWS=22,N=COLS*ROWS;
+const geo=new THREE.BoxGeometry(0.92,0.64,0.06);
+const mats=[0,0,0,0,1,1].map(i=>i?new THREE.MeshBasicMaterial({map:ttex}):new THREE.MeshBasicMaterial({color:0x0d0d10}));
+const tiles=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({map:ttex}),N);scene.add(tiles);
+const T=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){T.push({x:(c-(COLS-1)/2)*1.02,y:(r-(ROWS-1)/2)*0.74,fall:rnd()<0.82?1.25+rnd()*3.1:99,spin:(rnd()-.5)*8,lit:rnd()<0.35?rnd()*1.2:-9})}
+const dummy=new THREE.Object3D(),col=new THREE.Color();
+// text in camera space
+const tg=new THREE.Group();tg.position.z=-10;cam.add(tg);
+const lines=[
+ word('ZE KWAMEN LANGS.',{h:0.62,y:3.15,maxW:4.6,parent:tg}),
+ word('ZE GINGEN WEG.',{h:0.62,y:2.35,maxW:4.6,parent:tg}),
+ word('JE VOLGDE',{h:0.62,y:1.4,maxW:4.6,parent:tg}),
+ word('NOOIT OP.',{h:0.78,color:CORALHEX,y:0.45,maxW:4.7,parent:tg})];
+const LT=[0.2,1.25,2.55,2.95];
+const counter=canvasPlane(1100,340,4.7,()=>{},tg);counter.position.set(0,-2.6,0);
+tg.traverse(o=>{if(o.material){o.material.depthTest=false;o.renderOrder=10}});
+const fmt=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+window.renderAt=t=>{
+ // camera
+ const dive=eIn((t-4.35)/0.65);
+ cam.position.set(Math.sin(t*0.6)*0.8,lerp(-8.5,-6.2,eIO(t/4.4))+dive*3,lerp(8.2,6.8,eIO(t/4.4))-dive*4);
+ cam.lookAt(0,lerp(1.2,2.2,t/5)+dive*6,0);cam.rotation.z+=Math.sin(t*0.7)*0.03;
+ const sh=impulse(t,[LT[1]],14)*0.05+impulse(t,[LT[3]],12)*0.09;cam.position.x+=Math.sin(t*90)*sh;cam.position.y+=Math.cos(t*77)*sh;
+ // tiles
+ T.forEach((p,i)=>{const w=Math.sin(p.x*0.55+t*2.6)*0.35+Math.cos(p.y*0.4-t*1.8)*0.3;let z=w,rx=0,ry=0,rz=0;
+  if(t>p.fall){const e=t-p.fall;z-=e*e*7;rx=e*p.spin*0.6;rz=e*p.spin*0.3}
+  dummy.position.set(p.x,p.y,z);dummy.rotation.set(rx+Math.cos(p.x*0.55+t*2.6)*0.2,ry,rz);dummy.updateMatrix();tiles.setMatrixAt(i,dummy.matrix);
+  const le=t-p.lit;let k=1;if(le>0&&le<0.5)k=1+Math.sin(le/0.5*Math.PI)*2.2;
+  const fade=t>p.fall?cl(1-(t-p.fall)/1.2):1;
+  if(k>1)col.setRGB(lerp(1,3.2,(k-1)/2.2)*fade,lerp(1,1.15,(k-1)/2.2)*fade,lerp(1,0.65,(k-1)/2.2)*fade);else col.setRGB(fade,fade,fade);tiles.setColorAt(i,col)});
+ tiles.instanceMatrix.needsUpdate=true;tiles.instanceColor.needsUpdate=true;
+ // text lines
+ lines.forEach((L,li)=>L.letters.forEach((m,j)=>{const p=eOut((t-LT[li]-j*0.028)/0.38);m.material.opacity=p*(1-cl((t-4.4)/0.3));const r=m.userData.rest;
+  let jx=0;if(li===3&&t>LT[3]+0.35&&t<LT[3]+0.9&&Math.floor(t*30)%4===0)jx=(Math.sin(j*91+t*300))*0.12;
+  m.position.set(r.x+jx,r.y-(1-p)*0.45,0);m.rotation.x=(1-p)*1.3;
+  if(li===3&&t>=LT[3]+j*0.028){const e=t-LT[3]-j*0.028;m.scale.setScalar(1+0.25*Math.exp(-e*9)*Math.cos(e*30))}}));
+ // counter
+ const n=Math.floor(1284*eOut((t-1.25)/3.0));const ca=eOut((t-1.1)/0.4)*(1-cl((t-4.4)/0.3));counter.material.opacity=ca;
+ counter.userData.redraw(x=>{x.font='34px MO';x.fillStyle='#8a8a94';x.textAlign='center';x.fillText('KLANTEN DIE NOOIT TERUGKWAMEN',550,60);
+  x.font='200px IBD';x.fillStyle='#ece9e2';x.fillText(fmt(n),550,280)});
+ bloom.strength=0.75+impulse(t,[LT[3]],8)*0.6;fx.uniforms.uCA.value=0.0015+impulse(t,[LT[1]],12)*0.015+impulse(t,[LT[3]],12)*0.03+dive*0.05;
+ S.render(t);S.hud(t,t<2.5?'ARRAY / WAVE':'LOSS / COUNTER',eOut(t/0.3)*(1-dive));
+ S.flash(cl((t-4.8)/0.12)*0.9,'#000');
+};
+window.READY=true;
+</script></body></html>

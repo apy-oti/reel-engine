@@ -1,0 +1,14 @@
+{
+  "title": "Test: NL promo met voice-over",
+  "language": "nl",
+  "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+  "voiceover": "Je inbox is stil. Klanten kwamen langs, en gingen weer weg. Niemand volgde op. Daarom bouw ik de machine. Een welkomstreeks, een verlaten winkelmand, een win-back. Hij verkoopt terwijl jij slaapt. Jouw lijst. Jouw merk. Jouw geld. Op autopiloot. Own The Inbox.",
+  "scenes": [
+    {"file": "s1.html", "seconds": 4},
+    {"file": "s2.html", "seconds": 5},
+    {"file": "s3.html", "seconds": 6},
+    {"file": "s4.html", "seconds": 7},
+    {"file": "s5.html", "seconds": 4},
+    {"file": "s6.html", "seconds": 4}
+  ]
+}

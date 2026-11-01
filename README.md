@@ -23,3 +23,10 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy out.mp4
 - s*, nl_s*, w*, e*.html: scenes per video
 - render.py: frame capture to mp4
 - sheet.py: contact sheet for quick review
+
+## The machine (GitHub)
+1. Add a folder `reels/<date>-<name>/` with `reel.json` (voice-over text, voice_id, scenes) and the scene HTML files.
+   Scenes import `/lib.js` and use `/node_modules/...` in the importmap.
+2. Push. The "Build reels" workflow makes the voice-over with ElevenLabs, renders, mixes, and uploads the mp4s.
+3. Download from Actions -> latest run -> Artifacts -> reels.
+Secret needed: ELEVENLABS_API_KEY. Local run: `python3 build_reel.py reels/<id>` (NO_VOICE=1 to skip voice).

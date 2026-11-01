@@ -1,0 +1,62 @@
+name: Build reels
+
+on:
+  push:
+    branches: [main]
+    paths: ["reels/**"]
+  workflow_dispatch:
+    inputs:
+      reel:
+        description: "Folder to build, e.g. reels/2026-11-test-nl-promo (empty = all changed in last commit)"
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Pick reels to build
+        id: pick
+        run: |
+          if [ -n "${{ github.event.inputs.reel }}" ]; then
+            echo "${{ github.event.inputs.reel }}" > reels.txt
+          else
+            git diff --name-only HEAD~1 HEAD -- reels/ | cut -d/ -f1-2 | sort -u > reels.txt || true
+          fi
+          # only folders that have a reel.json
+          : > todo.txt
+          while read -r d; do [ -f "$d/reel.json" ] && echo "$d" >> todo.txt; done < reels.txt
+          echo "Building:"; cat todo.txt
+          echo "count=$(wc -l < todo.txt)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.pick.outputs.count != '0'
+        with:
+          node-version: 20
+
+      - name: Install tools
+        if: steps.pick.outputs.count != '0'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          npm ci
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Build
+        if: steps.pick.outputs.count != '0'
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          while read -r d; do python3 build_reel.py "$d"; done < todo.txt
+
+      - name: Upload videos
+        if: steps.pick.outputs.count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: reels
+          path: out/*.mp4
+          retention-days: 90

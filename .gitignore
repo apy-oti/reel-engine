@@ -5,3 +5,6 @@ log*
 *log2
 final/
 q_*.png
+node_modules
+build/
+out/

@@ -18,7 +18,7 @@ export function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 |
 const FONTS = { IB: 'InterDisplay-Black.otf', IBD: 'InterDisplay-Bold.otf', ISB: 'InterDisplay-SemiBold.otf', IM: 'Inter-Medium.otf', MO: 'DejaVuSansMono.ttf' };
 
 export async function setup({ sceneNo, total = 6, tcOffset = 0, title = 'OWN THE INBOX - MOTION REEL 2026', bloom: bc = [0.8, 0.5, 0.9], bg = 0x050506 }) {
-  for (const [n, f] of Object.entries(FONTS)) { const ff = new FontFace(n, `url(${f})`); await ff.load(); document.fonts.add(ff) }
+  for (const [n, f] of Object.entries(FONTS)) { const ff = new FontFace(n, `url(/${f})`); await ff.load(); document.fonts.add(ff) }
   const st = document.createElement('style');
   st.textContent = `html,body{margin:0;background:#000;width:1080px;height:1920px;overflow:hidden}canvas{display:block}
   #hud{position:fixed;inset:0;pointer-events:none;font:22px MO;color:#8a8a94;letter-spacing:2px}
