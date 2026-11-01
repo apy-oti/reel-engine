@@ -35,5 +35,8 @@ with sync_playwright() as p:
         ff.stdin.write(pg.screenshot(type="jpeg", quality=92, timeout=180000))
         if i % 30 == 0: print(i, round(time.time() - t0, 1), flush=True)
     ff.stdin.close()
+    import json as _j
+    hits = pg.evaluate("window.__HITS || {}")
+    _j.dump({k: v for k, v in hits.items() if 0 <= float(k) <= DUR}, open(out.replace(".mp4", ".hits.json"), "w"))
     if ff.wait() == 0: os.replace(tmp, out)
     b.close()

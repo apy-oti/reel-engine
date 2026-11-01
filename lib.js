@@ -12,7 +12,9 @@ export const cl = x => Math.max(0, Math.min(1, x)), lerp = (a, b, t) => a + (b -
 export const eOut = t => 1 - Math.pow(1 - cl(t), 3), eIn = t => Math.pow(cl(t), 3);
 export const eIO = t => { t = cl(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2 };
 export const eExpo = t => { t = cl(t); return t === 1 ? 1 : 1 - Math.pow(2, -10 * t) };
-export const impulse = (t, times, decay) => { let s = 0; for (const ti of times) if (t >= ti) s += Math.exp(-(t - ti) * decay); return s };
+if (typeof window !== 'undefined') window.__HITS = window.__HITS || {};
+// every animation hit (impulse) is recorded so the build can put a sound on it
+export const impulse = (t, times, decay) => { const H = window.__HITS; for (const ti of times) { if (typeof ti === 'number' && isFinite(ti)) { const k = ti.toFixed(3); H[k] = Math.max(H[k] || 0, decay) } } let s = 0; for (const ti of times) if (t >= ti) s += Math.exp(-(t - ti) * decay); return s };
 export function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
 
 const FONTS = { IB: 'InterDisplay-Black.otf', IBD: 'InterDisplay-Bold.otf', ISB: 'InterDisplay-SemiBold.otf', IM: 'Inter-Medium.otf', MO: 'DejaVuSansMono.ttf' };
