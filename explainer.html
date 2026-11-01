@@ -19,7 +19,15 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--b
 .label{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:22px 38px;border:3px solid var(--glow);border-radius:14px;background:rgba(10,30,14,.85);
   font:52px IB;letter-spacing:-1px;white-space:nowrap;color:#fff;box-shadow:0 0 30px rgba(61,255,122,.55),inset 0 0 24px rgba(61,255,122,.25);text-shadow:0 0 18px rgba(61,255,122,.6)}
 #cap{position:absolute;left:0;right:0;top:1480px;text-align:center;pointer-events:none}
-#cap span.chunk{display:inline-block;background:#000;padding:14px 26px;border-radius:14px;font:68px IB;letter-spacing:-1.5px;line-height:1.05;max-width:900px}
+#cap span.chunk{display:inline-block;background:#000;padding:16px 30px;border-radius:16px;font:80px IB;letter-spacing:-2px;line-height:1.05;max-width:960px}
+#cap b{display:inline-block}
+#prog{position:absolute;left:0;top:0;height:12px;background:var(--coral);box-shadow:0 0 18px var(--coral);z-index:9}
+#progbg{position:absolute;left:0;right:0;top:0;height:12px;background:rgba(255,255,255,.08);z-index:8}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55}
+#grid{position:absolute;inset:-100px;background-image:linear-gradient(rgba(255,255,255,.035) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.035) 2px,transparent 2px);background-size:90px 90px}
+#emo{position:absolute;left:0;top:0;font:170px 'Noto Color Emoji';z-index:6;display:none;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+#punch{position:absolute;left:0;right:0;top:820px;text-align:center;font:300px IB;letter-spacing:-10px;color:var(--coral);display:none;z-index:7;text-shadow:0 20px 60px rgba(0,0,0,.7),0 0 60px rgba(255,92,54,.5);-webkit-text-stroke:6px #000;paint-order:stroke fill}
+#all{position:absolute;inset:0}
 #cap b{font-weight:normal}
 #cap b.on{color:var(--coral)}
 #brand{position:absolute;left:0;right:0;bottom:120px;text-align:center;font:28px MO;letter-spacing:4px;color:#6f6f78}
@@ -56,8 +64,9 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--b
 .end .s{font:50px IBD;max-width:860px;line-height:1.15}
 .end .h{position:absolute;bottom:160px;font:32px MO;letter-spacing:4px;opacity:.85}
 </style></head><body>
-<div id="stage"><div id="bgglow"></div></div>
-<div id="cap"></div><div id="brand">@OWNTHEINBOX</div>
+<div id="all"><div id="stage"><div id="grid"></div><div class="blob" id="b1" style="width:700px;height:700px;background:#ff5c36"></div><div class="blob" id="b2" style="width:600px;height:600px;background:#6c47ff"></div><div id="bgglow"></div></div>
+<div id="cap"></div><div id="brand">@OWNTHEINBOX</div><div id="emo"></div><div id="punch"></div></div>
+<div id="progbg"></div><div id="prog"></div>
 <svg id="cursor" viewBox="0 0 24 24"><path d="M4 2l16 10-7 1.5L9.5 21z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
 <div id="ring"></div>
 <script>
@@ -81,7 +90,7 @@ function comp(v) {
 }
 function spark(a) { const mx = Math.max(...a), mn = Math.min(...a); return a.map((y,i) => `${i?'L':'M'}${(i/(a.length-1)*820+10).toFixed(1)},${(205 - (y-mn)/(mx-mn||1)*190).toFixed(1)}`).join(' ') }
 
-let B = [], WORDS = [], CHUNKS = [], DUR = 0, END = null;
+let B = [], WORDS = [], CHUNKS = [], DUR = 0, END = null, POPS = [], PUNCH = [];
 async function init() {
   await document.fonts.ready; for (const f of ['IB','IBD','ISB','IM','MO']) await document.fonts.load(`40px ${f}`);
   const cfg = await (await fetch('/' + REEL + '/reel.json')).json();
@@ -108,6 +117,16 @@ async function init() {
   // caption chunks: up to 3 words, break after punctuation
   let cur = [];
   WORDS.forEach((w, i) => { cur.push(i); if (cur.length >= 3 || /[.,!?:;]$/.test(w.w) || i === WORDS.length - 1) { CHUNKS.push(cur); cur = [] } });
+  // emoji pops on key words, punch on numbers
+  const EMO = cfg.emoji_map || {'geld':'💸','omzet':'💸','€':'💸','euro':'💸','verliest':'📉','verlies':'📉','mail':'📩','inbox':'📩','e-mail':'📩','winkelmand':'🛒','mandje':'🛒','kassa':'🛒','klanten':'👥','klant':'👥','slaapt':'😴','autopiloot':'🤖','gratis':'🎁','korting':'🏷️','welkom':'👋','tijd':'⏰','vergeten':'🤔','missen':'💔','groei':'📈','procent':'📊','machine':'⚙️','webshop':'🛍️','webshops':'🛍️'};
+  let lastEmo = -9;
+  WORDS.forEach((w, i) => { const k = w.w.toLowerCase().replace(/[^a-z0-9€%\-]/g, '');
+    const e = EMO[k] || Object.entries(EMO).find(([kk]) => kk.length > 4 && k.startsWith(kk))?.[1];
+    if (e && w.s - lastEmo > 2.2) { POPS.push({ t: w.s, e, x: 140 + ((i * 397) % 700), y: 1180 + ((i * 131) % 140), r: ((i * 53) % 40) - 20 }); lastEmo = w.s; hit(w.s, 13) }
+    const num = /\d/.test(w.w) && w.w.replace(/[^\d]/g, '').length >= 1;
+    const words = { 'zeventig': '70%', 'dertig': '30%', 'drie': '3', 'vijf': '5', 'twee': '2' };
+    const pw = num ? w.w.replace(/[.,!?]$/, '') : (cfg.punch_words !== false && ({'zeventig':1,'dertig':1}[k]) ? words[k] : null);
+    if (pw) { PUNCH.push({ t: w.s, txt: pw + (k === 'zeventig' || k === 'dertig' ? '' : ''), d: Math.max(.7, w.e - w.s + .45) }); hit(w.s, 9) } });
   // record sound moments
   B.forEach(x => { if (x.lab) hit(x.t0 + 0.15, 20);
     const n = x.steps.length; x.steps.forEach((s, j) => { if (s.classList.contains('link')) return; hit(stepTime(x, j, n), 18) });
@@ -117,6 +136,21 @@ async function init() {
 const stepTime = (x, j, n) => x.t0 + 0.25 + (j / Math.max(n, 1)) * Math.min(x.t1 - x.t0 - 0.6, n * 0.45);
 
 window.renderAt = t => {
+  document.getElementById('prog').style.width = (cl(t / DUR) * 1080) + 'px';
+  const b1 = document.getElementById('b1'), b2 = document.getElementById('b2');
+  b1.style.transform = `translate(${180 + Math.sin(t * .35) * 260}px,${300 + Math.cos(t * .27) * 380}px)`;
+  b2.style.transform = `translate(${420 + Math.cos(t * .31) * 280}px,${1050 + Math.sin(t * .23) * 360}px)`;
+  document.getElementById('grid').style.transform = `translateY(${(t * 22) % 90}px)`;
+  // micro shake on punch moments
+  let sh = 0; for (const p of PUNCH) { const a = t - p.t; if (a >= 0 && a < .3) sh = Math.max(sh, (1 - a / .3) * 14) }
+  document.getElementById('all').style.transform = sh ? `translate(${Math.sin(t * 90) * sh}px,${Math.cos(t * 77) * sh}px)` : 'none';
+  const emo = document.getElementById('emo'); emo.style.display = 'none';
+  for (const p of POPS) { const a = t - p.t; if (a >= 0 && a < 1.3) { const q = back(a / .28), out = cl((a - 1.0) / .3);
+    emo.style.display = 'block'; emo.textContent = p.e; emo.style.left = p.x + 'px'; emo.style.top = (p.y - a * 40) + 'px';
+    emo.style.transform = `scale(${q * (1 - out * .6)}) rotate(${p.r + Math.sin(a * 6) * 6}deg)`; emo.style.opacity = 1 - out; } }
+  const pu = document.getElementById('punch'); pu.style.display = 'none';
+  for (const p of PUNCH) { const a = t - p.t; if (a >= 0 && a < p.d) { const q = back(a / .22), out = cl((a - p.d + .2) / .2);
+    pu.style.display = 'block'; pu.textContent = p.txt; pu.style.transform = `scale(${(.5 + .5 * q) * (1 + out * .3)}) rotate(-4deg)`; pu.style.opacity = 1 - out } }
   const cur = document.getElementById('cursor'), ring = document.getElementById('ring');
   cur.style.display = 'none'; ring.style.display = 'none';
   let shown = null;
@@ -153,7 +187,7 @@ window.renderAt = t => {
   const cap = document.getElementById('cap'); let html = '';
   if (!END || t < END.t0) for (let c = 0; c < CHUNKS.length; c++) { const ws = CHUNKS[c], s = WORDS[ws[0]].s, e = c + 1 < CHUNKS.length ? WORDS[CHUNKS[c+1][0]].s : WORDS[ws.at(-1)].e + .3;
     if (t >= s && t < e) { const q = back((t - s) / .18);
-      html = `<span class="chunk" style="transform:scale(${.85 + .15 * q})">` + ws.map(k => `<b class="${t >= WORDS[k].s && t < WORDS[k].e + .05 ? 'on' : ''}">${esc(WORDS[k].w)}</b>`).join(' ') + `</span>`; break } }
+      html = `<span class="chunk" style="transform:scale(${.85 + .15 * q})">` + ws.map(k => { const on = t >= WORDS[k].s && t < WORDS[k].e + .05, qq = back((t - WORDS[k].s) / .15); return `<b class="${on ? 'on' : ''}" style="transform:scale(${on ? 1 + .12 * (1 - cl((t - WORDS[k].s) / .25)) * qq : 1})">${esc(WORDS[k].w)}</b>` }).join(' ') + `</span>`; break } }
   cap.innerHTML = html;
 };
 init().catch(e => { console.error(e); document.body.innerHTML = '<pre style="color:red;font-size:30px">' + e + '</pre>' });
