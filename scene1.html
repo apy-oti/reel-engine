@@ -1,0 +1,176 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:IB;src:url(InterDisplay-Black.otf)}
+@font-face{font-family:MO;src:url(DejaVuSansMono.ttf)}
+html,body{margin:0;background:#000;width:1080px;height:1920px;overflow:hidden}
+canvas{display:block}
+#hud{position:fixed;inset:0;pointer-events:none;font:22px MO;color:#8a8a94;letter-spacing:2px}
+.c{position:absolute;width:38px;height:38px;border-color:#8a8a94;border-style:solid}
+#flash{position:fixed;inset:0;background:#fff;opacity:0}
+</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<div id="hud">
+  <div class="c" style="left:60px;top:140px;border-width:3px 0 0 3px"></div>
+  <div class="c" style="right:60px;top:140px;border-width:3px 3px 0 0"></div>
+  <div class="c" style="left:60px;bottom:140px;border-width:0 0 3px 3px"></div>
+  <div class="c" style="right:60px;bottom:140px;border-width:0 3px 3px 0"></div>
+  <div style="position:absolute;left:70px;top:190px"><span style="color:#ff5c36">&#9679;</span> OWN THE INBOX - MOTION REEL 2026</div>
+  <div style="position:absolute;right:70px;top:190px">SCENE 01 / 05</div>
+  <div style="position:absolute;left:70px;bottom:190px" id="lab">WARP / PARTICLES</div>
+  <div style="position:absolute;right:70px;bottom:190px" id="tc">00:00:00</div>
+</div>
+<div id="flash"></div>
+<script type="module">
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+
+await document.fonts.load('300px IB'); await document.fonts.load('22px MO');
+
+const W=1080,H=1920,CORAL=new THREE.Color(1,0.36,0.21);
+let seed=7;const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const cl=x=>Math.max(0,Math.min(1,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const eOut=t=>1-Math.pow(1-cl(t),3),eIn=t=>Math.pow(cl(t),3),eIO=t=>{t=cl(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const eBack=t=>{t=cl(t);const c1=2.2,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)};
+
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(1);renderer.setSize(W,H);document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x050506);
+const cam=new THREE.PerspectiveCamera(50,W/H,0.05,500);
+
+// ---------- glyphs ----------
+const FS=300,CAP=FS*0.727,PAD=40;
+function glyphCanvas(str,color){const c=document.createElement('canvas');const x=c.getContext('2d');x.font=`${FS}px IB`;
+  const w=Math.ceil(x.measureText(str).width)+PAD*2;c.width=w;c.height=Math.ceil(CAP+PAD*2);
+  x.font=`${FS}px IB`;x.fillStyle=color;x.fillText(str,PAD,PAD+CAP);return c}
+const allPts=[];
+function word(str,color,h,y,maxW,split){
+  const g=new THREE.Group();const meas=document.createElement('canvas').getContext('2d');meas.font=`${FS}px IB`;
+  let k=h/CAP;const total=meas.measureText(str).width*k;if(total>maxW){k*=maxW/total;}
+  const tw=meas.measureText(str).width*k;const parts=split?[...str]:[str];let cx=-tw/2;const letters=[];
+  for(const p of parts){const cv=glyphCanvas(p,color);const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;
+    const ww=cv.width*k,hh=cv.height*k;const m=new THREE.Mesh(new THREE.PlaneGeometry(ww,hh),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));
+    const adv=meas.measureText(p).width*k;const rest=new THREE.Vector3(cx+adv/2+ (ww-PAD*2*k-adv)/2,y,0);m.position.copy(rest);m.userData.rest=rest.clone();
+    // sample points
+    const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;const pts=[];
+    for(let py=0;py<cv.height;py+=4)for(let px=0;px<cv.width;px+=4){if(d[(py*cv.width+px)*4+3]>140)pts.push([rest.x+(px-cv.width/2)*k,rest.y+(cv.height/2-py)*k,color]);}
+    m.userData.pts=pts;allPts.push(...pts);cx+=adv;g.add(m);letters.push(m)}
+  scene.add(g);return {g,letters,k}}
+const MAXW=6.3;
+const wYour=word('YOUR','#d9d6cf',1.55,2.75,MAXW,true);
+const wInbox=word('INBOX','#d9d6cf',1.55,1.05,MAXW,true);
+const wIs=word('IS','#d9d6cf',1.0,-0.42,MAXW,false);
+const wQuiet=word('QUIET.','#ff5c36',1.9,-1.95,MAXW,true);
+
+// ---------- soft point material ----------
+function pointsMat(){return new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+  uniforms:{uA:{value:1}},vertexShader:`attribute float size;attribute vec3 color;varying vec3 vC;void main(){vC=color;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=size*(300./-mv.z);gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`uniform float uA;varying vec3 vC;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,0.,d);gl_FragColor=vec4(vC*a*uA,a*uA);}`})}
+function makePoints(n){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));
+  g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(n*3),3));g.setAttribute('size',new THREE.BufferAttribute(new Float32Array(n),1));
+  const p=new THREE.Points(g,pointsMat());p.frustumCulled=false;scene.add(p);return p}
+
+// assembly particles -> YOUR INBOX
+const srcA=[...wYour.letters,...wInbox.letters].flatMap(m=>m.userData.pts);
+const NA=7000;const A=[];for(let i=0;i<NA;i++){const tp=srcA[Math.floor(rnd()*srcA.length)];const a=rnd()*Math.PI*2,r=1.5+rnd()*9;
+  A.push({tx:tp[0]+(rnd()-.5)*.03,ty:tp[1]+(rnd()-.5)*.03,sx:Math.cos(a)*r,sy:Math.sin(a)*r,sz:-20-rnd()*90,d:rnd()*.4,sp:(rnd()<.5?1:-1)*(2+rnd()*3),hot:rnd()<.22,s:2+rnd()*3.5})}
+const PA=makePoints(NA);{const c=PA.geometry.attributes.color.array,s=PA.geometry.attributes.size.array;
+  A.forEach((p,i)=>{const col=p.hot?CORAL:new THREE.Color(1,.97,.93);c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;s[i]=p.s*.06})}
+
+// implosion particles from everything
+const NB=9000;const B=[];for(let i=0;i<NB;i++){const tp=allPts[Math.floor(rnd()*allPts.length)];B.push({x:tp[0],y:tp[1],coral:tp[2]!=='#d9d6cf',d:rnd(),z:(rnd()-.5)*.4,s:2+rnd()*3})}
+const PB=makePoints(NB);{const c=PB.geometry.attributes.color.array,s=PB.geometry.attributes.size.array;
+  B.forEach((p,i)=>{const col=p.coral?CORAL:new THREE.Color(1,.97,.93);c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;s[i]=p.s*.06})}
+
+// warp streaks
+const NS=1800;const S=[];for(let i=0;i<NS;i++){const a=rnd()*Math.PI*2;S.push({a,r:1.2+Math.pow(rnd(),.7)*10,z0:-rnd()*160,coral:rnd()<.3,b:.4+rnd()*.6})}
+const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NS*6),3));sg.setAttribute('color',new THREE.BufferAttribute(new Float32Array(NS*6),3));
+const SL=new THREE.LineSegments(sg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));SL.frustumCulled=false;scene.add(SL);
+
+// core glow
+const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');const g=x.createRadialGradient(128,128,0,128,128,128);
+  g.addColorStop(0,'rgba(255,240,230,1)');g.addColorStop(.15,'rgba(255,120,80,.9)');g.addColorStop(.5,'rgba(255,92,54,.25)');g.addColorStop(1,'rgba(255,92,54,0)');x.fillStyle=g;x.fillRect(0,0,256,256);return new THREE.CanvasTexture(c)})();
+const core=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}));scene.add(core);
+
+// ---------- post ----------
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,cam));
+const bloom=new UnrealBloomPass(new THREE.Vector2(W,H),0.8,0.5,0.9);composer.addPass(bloom);
+const fx=new ShaderPass({uniforms:{tDiffuse:{value:null},uCA:{value:0},uT:{value:0}},vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform sampler2D tDiffuse;uniform float uCA,uT;varying vec2 vUv;
+  float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233))+uT*91.7)*43758.5453);}
+  void main(){vec2 d=(vUv-.5);vec2 o=d*uCA;float r=texture2D(tDiffuse,vUv+o).r,g=texture2D(tDiffuse,vUv).g,b=texture2D(tDiffuse,vUv-o).b;
+  vec3 c=vec3(r,g,b);float v=1.-dot(d*vec2(1.,.6),d*vec2(1.,.6))*1.1;c*=v;c+=(h(vUv*vec2(1080.,1920.))-.5)*.035;gl_FragColor=vec4(c,1.);}`});
+composer.addPass(fx);composer.addPass(new OutputPass());
+
+// ---------- timeline ----------
+const tQ=[1.9,1.98,2.06,2.14,2.22,2.30];const tIS=1.72;
+function impulse(t,times,decay){let s=0;for(const ti of times){if(t>=ti)s+=Math.exp(-(t-ti)*decay)}return s}
+const v3=new THREE.Vector3();
+window.renderAt=function(t){
+  // camera path
+  let cz=lerp(19,14,eOut(t/1.6));
+  cz=lerp(cz,12.6,eIO((t-2.45)/0.7));
+  cz=lerp(cz,13.6,eIO((t-3.1)/0.45));
+  const whip=eIn((t-3.55)/0.38);cz=lerp(cz,0.35,whip);
+  const sh=impulse(t,[tIS],16)*0.12+impulse(t,tQ,22)*0.07+impulse(t,[3.12],10)*0.08;
+  const sx=Math.sin(t*97)*sh,sy=Math.cos(t*83)*sh;
+  const orbit=Math.sin(t*1.1)*0.6*(1-eOut((t-1.5)/1.2));
+  cam.position.set(orbit+sx,0.35+sy,cz);cam.lookAt(sx*0.3,0.35+sy*0.3,0);
+  cam.rotation.z+=lerp(0,0.05,eIO((t-2.45)/0.7))*(1-whip)+Math.sin(t*40)*sh*0.02;
+  cam.fov=50+whip*40;cam.updateProjectionMatrix();
+
+  // warp streaks
+  const travel=230*eOut(t/1.15);const spd=Math.max(0,1-t/1.15)**2;const sa=1-cl((t-0.75)/0.4);
+  const P=sg.attributes.position.array,C=sg.attributes.color.array;
+  S.forEach((s,i)=>{let z=s.z0+travel;z=((z+160)%172)-160;const L=0.15+spd*28;const x=Math.cos(s.a)*s.r,y=Math.sin(s.a)*s.r;
+    P[i*6]=x;P[i*6+1]=y;P[i*6+2]=z;P[i*6+3]=x;P[i*6+4]=y;P[i*6+5]=z-L;
+    const col=s.coral?CORAL:new THREE.Color(.75,.85,1);const b=s.b*sa*(z>9?0:1);
+    C[i*6]=col.r*b*1.6;C[i*6+1]=col.g*b*1.6;C[i*6+2]=col.b*b*1.6;C[i*6+3]=0;C[i*6+4]=0;C[i*6+5]=0});
+  sg.attributes.position.needsUpdate=sg.attributes.color.needsUpdate=true;SL.visible=sa>0;
+
+  // assembly particles
+  const pa=PA.geometry.attributes.position.array;
+  A.forEach((p,i)=>{const pr=eIO((t-0.22-p.d*0.75)/0.8);const ang=(1-pr)*p.sp;const ox=p.sx-p.tx,oy=p.sy-p.ty;const ca=Math.cos(ang),sn=Math.sin(ang);
+    const f=(1-pr);pa[i*3]=p.tx+(ox*ca-oy*sn)*f;pa[i*3+1]=p.ty+(ox*sn+oy*ca)*f;pa[i*3+2]=p.sz*f*f+Math.sin(t*9+i)*0.02*(pr>.99?1:0)});
+  PA.geometry.attributes.position.needsUpdate=true;PA.material.uniforms.uA.value=t<0.3?eOut(t/0.3):1-eIO((t-1.42)/0.35)*0.92;PA.visible=t<3.1;
+
+  // solid YOUR INBOX
+  const sA=eOut((t-1.38)/0.3);
+  [...wYour.letters,...wInbox.letters].forEach((m,j)=>{m.material.opacity=t<3.1?sA:0;const pop=1+0.08*Math.sin(cl((t-1.38-j*0.02)/0.3)*Math.PI);m.scale.setScalar(pop);m.position.copy(m.userData.rest)});
+  // IS slam
+  {const m=wIs.letters[0];const p=cl((t-tIS+0.14)/0.14);m.material.opacity=t<tIS-0.14||t>=3.1?0:1;m.position.copy(m.userData.rest);m.position.z=lerp(11,0,eIn(p));m.scale.setScalar(t>=tIS?eBack((t-tIS)/0.25)*0+1+0.25*Math.exp(-(t-tIS)*12)*Math.sin((t-tIS)*40):1)}
+  // QUIET letters fly in
+  wQuiet.letters.forEach((m,j)=>{const ti=tQ[j];const p=cl((t-ti+0.16)/0.16);m.material.opacity=t<ti-0.16||t>=3.1?0:1;
+    const r=m.userData.rest;m.position.set(r.x+(1-eIn(p))*(j-2.5)*1.2,r.y-(1-eIn(p))*2.2,lerp(12,0,eIn(p)));
+    m.rotation.set(0,0,(1-eIn(p))*(j%2?0.8:-0.8));
+    if(t>=ti){const e=t-ti;m.scale.setScalar(1+0.3*Math.exp(-e*10)*Math.cos(e*35))}
+    // drift beat
+    const dr=eIO((t-2.5)/0.6);m.position.z+=dr*(j-2.5)*0.25;m.position.y+=dr*Math.sin(j*1.7)*0.12;m.rotation.z+=dr*Math.sin(j*2.3)*0.12;m.rotation.y=dr*Math.sin(j*1.3)*0.35});
+
+  // implosion
+  const pb=PB.geometry.attributes.position.array;const cy=0.35;PB.visible=t>=3.1;
+  if(t>=3.1){B.forEach((p,i)=>{const pr=eIn((t-3.1-p.d*0.18)/0.5);const ang=pr*7*(0.6+p.d);const dx=p.x,dy=p.y-cy;const ca=Math.cos(ang),sn=Math.sin(ang);
+    const f=1-pr;pb[i*3]=(dx*ca-dy*sn)*f;pb[i*3+1]=cy+(dx*sn+dy*ca)*f;pb[i*3+2]=p.z*f+Math.sin(p.d*50)*pr*(1-pr)*3});
+    PB.geometry.attributes.position.needsUpdate=true;PB.material.uniforms.uA.value=1}
+  core.position.set(0,cy,0);const cg=eIn((t-3.2)/0.4);core.scale.setScalar(t<3.15?0:0.3+cg*3+impulse(t,[3.6],6)*2);core.material.opacity=t<3.15?0:cl(cg*1.5);
+
+  // post
+  bloom.strength=0.7+impulse(t,[tIS],8)*0.6+impulse(t,tQ,10)*0.25+cg*1.2+whip*2;
+  fx.uniforms.uCA.value=0.004+impulse(t,[tIS],14)*0.03+impulse(t,tQ,18)*0.02+whip*0.06+spd*0.02;fx.uniforms.uT.value=t;
+  composer.render(1/60);
+
+  // overlay
+  const fl=cl((t-3.78)/0.1)*(1-cl((t-3.93)/0.07));document.getElementById('flash').style.opacity=fl;
+  document.getElementById('flash').style.background=t<3.86?'#fff':'#ff5c36';
+  document.getElementById('hud').style.opacity=eOut(t/0.3)*(1-whip);
+  document.getElementById('lab').textContent=t<1.4?'WARP / PARTICLES':t<3.1?'KINETIC / TYPE':'IMPLODE / CORE';
+  const fr=Math.floor(t*60);document.getElementById('tc').textContent=`TC 00:00:0${Math.floor(t)}:${String(fr%60).padStart(2,'0')}`;
+  if(t>=3.97){renderer.domElement.style.opacity=0}else renderer.domElement.style.opacity=1;
+};
+window.READY=true;
+</script></body></html>

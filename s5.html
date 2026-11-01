@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,INK,CORALHEX,cl,lerp,eOut,eIn,eIO,eExpo,impulse,rng,rr} from './lib.js';
+const S=await setup({sceneNo:5,tcOffset:22});const {scene,cam,word,makePoints,bloom,fx}=S;const rnd=rng(55);
+cam.position.set(0,0,12);cam.lookAt(0,0,0);
+const DARK='#0b0b0d';
+// phrases: [line1,line2,start,end,bgCoral]
+const PH=[['YOUR','LIST.',0.0,0.62,false],['YOUR','BRAND.',0.62,1.24,true],['YOUR','MONEY.',1.24,1.86,false],['ON','AUTOPILOT.',1.86,4.0,false]];
+const G=PH.map(([a,b,ts,te,coral],i)=>{const c1=coral?DARK:INK,c2=coral?DARK:CORALHEX;
+ const l1=word(a,{h:1.7,y:1.25,maxW:5.3,color:c1}),l2=word(b,{h:i===3?1.2:1.7,y:-0.75,maxW:5.4,color:c2});return {l1,l2,ts,te,coral}});
+// dot sphere + ring
+const ND=2600,SP=makePoints(ND);const SD=[];for(let i=0;i<ND;i++){const y=1-2*(i+.5)/ND,r=Math.sqrt(1-y*y),a=i*2.39996;SD.push([Math.cos(a)*r,y,Math.sin(a)*r])}
+{const s=SP.geometry.attributes.size.array;for(let i=0;i<ND;i++)s[i]=0.4}
+const ring=new THREE.Mesh(new THREE.TorusGeometry(5.6,0.025,8,180),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));scene.add(ring);
+const ring2=new THREE.Mesh(new THREE.TorusGeometry(6.4,0.015,8,180),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));scene.add(ring2);
+const hits=PH.map(p=>p[2]);
+window.renderAt=t=>{
+ const cur=PH.findIndex(p=>t>=p[2]&&t<p[3]);const coral=cur>=0&&PH[cur][4];
+ scene.background.set(coral?CORALHEX:'#050506');
+ const out=eIn((t-3.55)/0.45);
+ const sh=impulse(t,hits,16)*0.12;cam.position.set(Math.sin(t*97)*sh,Math.cos(t*83)*sh,12-eOut((t-1.86)/2)*1.2-out*8);cam.lookAt(0,0,0);
+ cam.rotation.z=Math.sin(t*61)*sh*0.08+out*0.5;
+ G.forEach((g,i)=>{const on=t>=g.ts&&t<g.te;const a=t-g.ts;
+  [g.l1,g.l2].forEach((L,li)=>L.letters.forEach((m,j)=>{
+   if(i<3){const p=eExpo(a/0.22);m.material.opacity=on?1:0;const r=m.userData.rest;m.position.set(r.x*lerp(1.5,1,p),r.y*lerp(1.4,1,p),lerp(3.5,0,p));m.rotation.z=(1-p)*(li?0.15:-0.15)}
+   else{const p=eExpo((a-li*0.12-j*0.045)/0.4);m.material.opacity=on?cl(p*1.5)*(1-out):0;const r=m.userData.rest;
+    m.position.set(r.x,r.y+(1-p)*(li?-1.2:1.2),lerp(-6,0,p));m.rotation.set((1-p)*(li?-1.6:1.6),0,0);
+    const e=a-li*0.12-j*0.045-0.2;m.scale.setScalar(e>0?1+0.12*Math.exp(-e*8)*Math.cos(e*26):1)}}))});
+ // sphere
+ const sc=lerp(3.2,4.4,eIO(t/4))*(1+impulse(t,hits,10)*0.12);const pp=SP.geometry.attributes.position.array,pc=SP.geometry.attributes.color.array;
+ const ry=t*0.9,rx=0.4+t*0.3;const cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);
+ const col=coral?[0.05,0.05,0.06]:[CORAL.r*1.1,CORAL.g*1.1,CORAL.b*1.1];
+ SD.forEach(([x,y,z],i)=>{const w=1+0.08*Math.sin(y*8+t*6);let X=x*cy+z*sy,Z=-x*sy+z*cy,Y=y*cx-Z*sx;Z=y*sx+Z*cx;pp.set([X*sc*w,Y*sc*w,Z*sc*w-4],i*3);
+  const dpt=0.35+0.65*(Z+1)/2;pc.set([col[0]*dpt,col[1]*dpt,col[2]*dpt],i*3)});
+ SP.geometry.attributes.position.needsUpdate=SP.geometry.attributes.color.needsUpdate=true;
+ SP.material.blending=coral?THREE.NormalBlending:THREE.AdditiveBlending;
+ ring.rotation.set(1.2+t*0.5,t*0.7,0);ring2.rotation.set(-0.9-t*0.4,0.3,t*0.6);ring.position.z=ring2.position.z=-4;
+ ring.material.color.set(coral?DARK:'#ff5c36');ring2.material.color.set(coral?DARK:'#8a8a94');
+ bloom.strength=coral?0:0.8+impulse(t,hits,10)*0.4+out*1.5;fx.uniforms.uCA.value=0.0015+impulse(t,hits,14)*0.03+out*0.06;
+ S.render(t);S.hud(t,'KINETIC / CUTS',eOut(t/0.2)*(1-out));
+ S.flash(cl((t-3.85)/0.1),'#000');
+};
+window.READY=true;
+</script></body></html>

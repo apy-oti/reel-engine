@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,impulse,rng} from './lib.js';
+import {WHITE,GREY,CORAL as CH,font,fit,letters,mono,panel,chrome,cl,lerp,eOut,eIn,eIO,eExpo,rr} from './ui.js';
+const OFF=40,S=await setup({sceneNo:5,total:6,tcOffset:OFF,title:'OWN THE INBOX'});const {scene,cam,makePoints,bloom,fx,ui:x}=S;const rnd=rng(55);
+// background: slow dotted sphere + dust
+const NS=2200,SP=makePoints(NS),SD=[];for(let i=0;i<NS;i++){const y=1-2*(i+.5)/NS,r=Math.sqrt(1-y*y),a=i*2.39996;SD.push([Math.cos(a)*r,y,Math.sin(a)*r])}
+{const s=SP.geometry.attributes.size.array;for(let i=0;i<NS;i++)s[i]=.22}
+const ND=400,DU=makePoints(ND),DD=[];for(let i=0;i<ND;i++)DD.push([(rnd()-.5)*16,(rnd()-.5)*26,-3-rnd()*18,rnd()]);
+{const c=DU.geometry.attributes.color.array,s=DU.geometry.attributes.size.array;DD.forEach((d,i)=>{c.set([.3,.3,.3],i*3);s[i]=.12})}
+const STEPS=[['I sign up at your shop.','Exactly like a real customer.'],['I show you what I receive.','Or what never arrives.'],['I show you what it costs.','In lost customers and lost sales.']];
+const TS=fit(x,STEPS.map(s=>s[0]),'IBD',660,48,-1);const ST=[2.5,4.1,5.7],SY=[790,995,1200];
+const HS=fit(x,['Here’s what I’ll do.'],'IBD',880,96);
+window.renderAt=t=>{
+ cam.position.set(Math.sin(t*0.25)*0.6,0,12-eIO(t/12)*0.8);cam.lookAt(0,0,0);
+ const fo=1-eIn((t-11.4)/0.55);
+ const sc=6.2,ry=t*0.18,rx=0.5;const cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);
+ const pp=SP.geometry.attributes.position.array,pc=SP.geometry.attributes.color.array;
+ SD.forEach(([X,Y,Z],i)=>{let x1=X*cy+Z*sy,z1=-X*sy+Z*cy,y1=Y*cx-z1*sx;z1=Y*sx+z1*cx;pp.set([x1*sc,y1*sc-0.5,z1*sc-9],i*3);const d=0.15+0.5*(z1+1)/2;pc.set([CORAL.r*d,CORAL.g*d,CORAL.b*d],i*3)});
+ SP.geometry.attributes.position.needsUpdate=SP.geometry.attributes.color.needsUpdate=true;SP.material.uniforms.uA.value=eOut(t/1)*fo*0.8;
+ const dp=DU.geometry.attributes.position.array;DD.forEach((d,i)=>dp.set([d[0],d[1]+t*0.2*(0.5+d[3]),d[2]],i*3));DU.geometry.attributes.position.needsUpdate=true;DU.material.uniforms.uA.value=fo;
+ bloom.strength=0.6;fx.uniforms.uCA.value=0.0012;
+ S.render(t);x.clearRect(0,0,1080,1920);
+ letters(x,'Here’s what I’ll do.',540,450,{size:HS,align:'center',t,t0:0.3,t1:11.4});
+ letters(x,'For free.',540,610,{size:140,align:'center',color:CH,t,t0:1.05,t1:11.4,glow:24,stagger:0.04});
+ const dimS=lerp(1,0.55,eIO((t-7.7)/0.5));
+ STEPS.forEach(([ti,sub],i)=>{const t0=ST[i],p=eExpo((t-t0)/0.75);if(p<=0)return;const dx=(1-p)*120,a=cl(p*1.4)*fo,Y=SY[i];
+  panel(x,90+dx,Y-85,860,170,{alpha:a*dimS,r:36,fill:'rgba(22,22,28,0.9)',stroke:'rgba(255,255,255,0.12)'});
+  const pop=1+0.2*Math.exp(-(t-t0-0.2)*9)*Math.cos((t-t0-0.2)*26)*(t>t0+0.2?1:0);
+  x.save();x.translate(170+dx,Y);x.scale(pop,pop);x.globalAlpha=a*dimS;x.fillStyle=CH;x.beginPath();x.arc(0,0,44,0,7);x.fill();
+  font(x,48,'IB',0);x.fillStyle='#fff';x.textAlign='center';x.fillText(String(i+1),0,17);x.restore();x.textAlign='left';x.globalAlpha=1;
+  letters(x,ti,244+dx,Y-6,{size:TS,t,t0:t0+0.15,alpha:fo*dimS,stagger:0.01,rise:20});
+  font(x,32,'IM',0);x.globalAlpha=cl((t-t0-0.45)/0.4)*fo*dimS;x.fillStyle=GREY;x.fillText(sub,246+dx,Y+44);x.globalAlpha=1});
+ letters(x,'No pitch.',540,1400,{size:72,align:'center',t,t0:7.9,t1:11.4});
+ letters(x,'Just screenshots.',540,1490,{size:72,align:'center',color:CH,t,t0:8.4,t1:11.4,glow:14});
+ chrome(x,OFF+t);S.hud(t,'05 / THE OFFER',1);
+};
+window.READY=true;
+</script></body></html>

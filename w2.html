@@ -1,0 +1,84 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,INK,CORALHEX,cl,lerp,eOut,eIn,eIO,eExpo,impulse,rng,rr} from './lib.js';
+const S=await setup({sceneNo:2,total:4,tcOffset:3.5,title:'OWN THE INBOX - WHY EMAIL'});const {scene,cam,word,canvasPlane,makePoints,bloom,fx}=S;const rnd=rng(202);
+const HANDLES=['@cityburgers','@nailsbyjess','@urbanfit','@coffee.lab','@vintage.store','@pizzanapoli','@glowskin','@techdeals','@bloemenhuis','@streetwear.co','@dailyyoga','@sushi.spot'];
+const PAL=[['#ff9a62','#c2410c'],['#7c83ff','#2b2f7a'],['#3ddc97','#0f5f45'],['#f5c84c','#9a6b06'],['#ff6fae','#7a1748'],['#62d0ff','#0b4f73'],['#c9a27e','#5b3b22'],['#b26bff','#3b116e'],['#ff5c36','#6e1a07'],['#e8e5de','#6b6b74']];
+function drawPost(x,handle,pal,caption,mine){x.fillStyle='#f4f2ec';rr(x,4,4,992,1292,46);x.fill();
+ x.fillStyle=pal[0];x.beginPath();x.arc(80,82,40,0,7);x.fill();x.fillStyle='#111';x.font='40px IBD';x.fillText(handle,140,96);
+ x.fillStyle='#9a9aa4';x.font='44px IBD';x.fillText('···',900,90);
+ const g=x.createLinearGradient(0,150,1000,1100);g.addColorStop(0,pal[0]);g.addColorStop(1,pal[1]);x.fillStyle=g;x.fillRect(4,150,992,900);
+ x.globalAlpha=.25;x.fillStyle='#fff';for(let i=0;i<5;i++){x.beginPath();x.arc(200+i*160,400+((i*137)%300),80+(i*53)%90,0,7);x.fill()}x.globalAlpha=1;
+ if(mine){x.fillStyle='rgba(255,255,255,.9)';x.font='110px IB';x.textAlign='center';x.fillText('FRESH',500,560);x.fillText('CROISSANTS',500,690);x.font='54px IBD';x.fillText('2 FOR 1 TODAY',500,800);x.textAlign='left'}
+ x.strokeStyle='#111';x.lineWidth=7;x.beginPath();x.moveTo(70,1110);x.bezierCurveTo(40,1080,60,1050,90,1065);x.bezierCurveTo(120,1050,140,1080,110,1110);x.lineTo(90,1130);x.closePath();x.stroke();
+ x.beginPath();x.arc(200,1092,32,0,7);x.stroke();
+ x.fillStyle='#222';x.font='38px IM';x.fillText(caption,50,1215)}
+const mine=canvasPlane(1000,1300,3.4,x=>drawPost(x,'@cornerbakery',['#ffb37a','#b4501d'],'Fresh croissants today, come by!',true));mine.position.set(0,0.2,0);
+// atlas of other posts
+const CAPS=['New drop is live','Book your spot now','Weekend special!','Only 3 left','Monday motivation','Sale ends tonight','Check our new menu','Restock alert'];
+const texs=[...Array(12)].map((_,i)=>{const c=document.createElement('canvas');c.width=500;c.height=650;const x=c.getContext('2d');x.scale(.5,.5);drawPost(x,HANDLES[i],PAL[i%PAL.length],CAPS[i%CAPS.length],false);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t});
+const mats=texs.map(t=>new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));
+const pg=new THREE.PlaneGeometry(3.4,4.42);const NP=240;const P=[];
+for(let i=0;i<NP;i++){const m=new THREE.Mesh(pg,mats[i%12]);scene.add(m);m.renderOrder=10+i;
+ const a=rnd()*Math.PI*2,r=Math.sqrt(rnd())*2.6;
+ P.push({m,t0:0.9+3.4*Math.pow(i/NP,0.62),sx:(rnd()-.5)*8,tx:Math.cos(a)*r*0.8,ty:0.2+Math.sin(a)*r,tz:0.05+i*0.014,rz:(rnd()-.5)*0.9,rz0:(rnd()-.5)*4,s:0.55+rnd()*0.4,
+  bvx:0,bvy:0,bvz:0,spin:(rnd()-.5)*12})}
+P.forEach(p=>{const dx=p.tx,dy=p.ty-0.2,l=Math.hypot(dx,dy)+0.3;p.bvx=dx/l*(9+rnd()*10);p.bvy=dy/l*(9+rnd()*10)+3;p.bvz=4+rnd()*8});
+mine.renderOrder=5;mine.material.color.setScalar(0.86);mats.forEach(m=>m.color.setScalar(0.82));
+// camera-space text
+const tg=new THREE.Group();tg.position.z=-10;cam.add(tg);
+const tYour=word('YOUR POST.',{h:0.7,y:3.45,maxW:4.6,parent:tg});
+const shade=canvasPlane(64,256,6,x=>{const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'rgba(5,5,6,0)');g.addColorStop(.35,'rgba(5,5,6,.88)');g.addColorStop(1,'rgba(5,5,6,.97)');x.fillStyle=g;x.fillRect(0,0,64,256)},tg);shade.scale.set(1,0.25,1);shade.position.set(0,-2.05,-0.02);
+const counter=canvasPlane(1100,330,4.8,()=>{},tg);counter.position.set(0,-2.75,0);
+const never=word('951 NEVER SEE IT.',{h:0.55,y:-1.7,maxW:4.6,color:CORALHEX,parent:tg});
+const cuts1=word('EMAIL',{h:0.95,y:3.1,maxW:4.6,parent:tg}),cuts2=word('CUTS THROUGH.',{h:0.62,y:2.2,maxW:4.6,color:CORALHEX,parent:tg});
+tg.traverse(o=>{if(o.material){o.material.depthTest=false;o.renderOrder=1000}});shade.renderOrder=999;
+// envelope
+const env=new THREE.Group();scene.add(env);
+const envFront=canvasPlane(800,540,2.6,x=>{x.fillStyle=CORALHEX;rr(x,6,6,788,528,48);x.fill();x.strokeStyle='#fff';x.lineWidth=26;x.lineJoin='round';x.lineCap='round';
+ x.beginPath();x.moveTo(70,70);x.lineTo(400,300);x.lineTo(730,70);x.stroke();x.globalAlpha=.35;x.beginPath();x.moveTo(70,470);x.lineTo(300,250);x.moveTo(730,470);x.lineTo(500,250);x.stroke()},env);
+envFront.renderOrder=900;
+const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');const g=x.createRadialGradient(128,128,0,128,128,128);
+ g.addColorStop(0,'rgba(255,200,170,1)');g.addColorStop(.25,'rgba(255,92,54,.7)');g.addColorStop(1,'rgba(255,92,54,0)');x.fillStyle=g;x.fillRect(0,0,256,256);return new THREE.CanvasTexture(c)})();
+const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}));glow.renderOrder=899;env.add(glow);glow.position.z=-0.1;
+const NS=500,SP=makePoints(NS);SP.renderOrder=898;const SD=[];for(let i=0;i<NS;i++){const a=rnd()*Math.PI*2;SD.push({a,r:0.3+rnd()*1.6,o:rnd(),s:1.5+rnd()*2.5})}
+{const c=SP.geometry.attributes.color.array,s=SP.geometry.attributes.size.array;SD.forEach((d,i)=>{c.set(rnd()<.5?[1.4,.6,.35]:[1.2,1.1,1],i*3);s[i]=d.s*.07})}
+const fmt=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const TBURST=5.75;
+window.renderAt=t=>{
+ const rumble=t>5.0&&t<TBURST?eIn((t-5.0)/0.75)*0.09:0;const sh=rumble+impulse(t,[TBURST],7)*0.25;
+ const fin=eIn((t-7.95)/0.5);
+ cam.position.set(Math.sin(t*97)*sh+Math.sin(t*0.5)*0.4,0.2+Math.cos(t*83)*sh,lerp(13,11.5,eIO(t/5))-fin*2);cam.lookAt(0,0.2,0);
+ mine.rotation.set(Math.sin(t*0.9)*0.08,Math.sin(t*0.7)*0.18,Math.sin(t*0.5)*0.03);mine.scale.setScalar(lerp(0.85,1,eOut(t/0.6)));mine.material.opacity=eOut(t/0.3);
+ const bt=t-TBURST;
+ P.forEach(p=>{const a=t-p.t0;if(a<0){p.m.visible=false;return}p.m.visible=true;const q=cl(a/0.42);
+  let x=lerp(p.tx+p.sx,p.tx,eOut(q)),y=lerp(9,p.ty,eIn(q)),z=p.tz,rz=lerp(p.rz0,p.rz,eOut(q));
+  if(q>=1){const b=a-0.42;y+=Math.abs(Math.sin(b*14))*0.12*Math.exp(-b*9)}
+  let rx=0,ry=0;if(bt>0){x+=p.bvx*bt;y+=p.bvy*bt-6*bt*bt;z+=p.bvz*bt;rz+=p.spin*bt;rx=p.spin*bt*0.6;ry=p.spin*bt*0.4}
+  p.m.position.set(x,y,z);p.m.rotation.set(rx,ry,rz);p.m.scale.setScalar(p.s);p.m.visible=bt<1.6});
+ mine.visible=t<TBURST;
+ // texts
+ tYour.letters.forEach((m,j)=>{const q=eOut((t-0.15-j*0.03)/0.35);m.material.opacity=q*(1-cl((t-1.6)/0.3));const r=m.userData.rest;m.position.set(r.x,r.y-(1-q)*0.4,0);m.rotation.x=(1-q)*1.3});
+ const n=Math.round(lerp(1000,49,eIO((t-1.2)/3.2)));const ca=eOut((t-1.0)/0.4)*(1-cl((t-5.55)/0.2));counter.material.opacity=ca;
+ shade.material.opacity=cl(eOut((t-1.0)/0.4)*(1-cl((t-5.55)/0.2)));
+ counter.userData.redraw(x=>{x.textAlign='center';x.font='34px MO';x.fillStyle='#8a8a94';x.fillText('FOLLOWERS WHO SEE IT',550,56);
+  x.font='190px IB';x.fillStyle=n<200?CORALHEX:'#ece9e2';x.fillText(fmt(n),550,250);x.font='22px MO';x.fillStyle='#6b6b74';x.fillText('AVG. INSTAGRAM REACH 4.9% OF FOLLOWERS (SOCIALINSIDER, 2026)',550,310)});
+ never.letters.forEach((m,j)=>{const ti=4.55+j*0.025,q=eExpo((t-ti)/0.25);m.material.opacity=q*(1-cl((t-5.55)/0.2));const r=m.userData.rest;m.position.set(r.x,r.y,lerp(4,0,q));
+  const e=t-ti;m.scale.setScalar(e>0?1+0.25*Math.exp(-e*10)*Math.cos(e*30):1)});
+ [cuts1,cuts2].forEach((L,li)=>L.letters.forEach((m,j)=>{const q=eOut((t-6.35-li*0.3-j*0.03)/0.35);m.material.opacity=q*(1-fin);const r=m.userData.rest;m.position.set(r.x,r.y-(1-q)*0.4,0);m.rotation.x=(1-q)*1.3;
+  const e=t-6.35-li*0.3-j*0.03;m.scale.setScalar(e>0?1+0.2*Math.exp(-e*10)*Math.cos(e*30):1)}));
+ // envelope
+ env.visible=t>TBURST-0.05;const ep=eExpo(bt/0.7);
+ env.position.set(0,lerp(-0.6,-0.9,ep),lerp(-0.5,5.2,ep)+fin*8);env.rotation.set(Math.sin(t*1.3)*0.15*(ep),Math.sin(t*1.7)*0.35*ep+(1-ep)*3,Math.sin(t*0.9)*0.06);
+ env.scale.setScalar(lerp(0.3,1,ep)*(1+impulse(t,[TBURST+0.7],6)*0.1));
+ glow.scale.setScalar(lerp(2,4,ep)+Math.sin(t*9)*0.25);glow.material.opacity=bt>0?0.75:0;
+ const sp=SP.geometry.attributes.position.array;SP.visible=bt>0;
+ SD.forEach((d,i)=>{const ph=(d.o+t*1.4)%1;const ang=d.a+t*2;sp.set([env.position.x+Math.cos(ang)*d.r*(0.6+ph),env.position.y+Math.sin(ang)*d.r*(0.6+ph)*0.7,env.position.z-ph*4],i*3)});
+ SP.geometry.attributes.position.needsUpdate=true;SP.material.uniforms.uA.value=cl(bt*3)*(1-fin);
+ bloom.strength=0.7+impulse(t,[TBURST],5)*1.8+fin*1.5;fx.uniforms.uCA.value=0.0015+rumble*0.15+impulse(t,[TBURST],8)*0.05+fin*0.06;fx.uniforms.uGl.value=rumble*3;
+ S.render(t);S.hud(t,t<TBURST?'FEED / AVALANCHE':'SIGNAL / BREAKOUT',eOut(t/0.2)*(1-fin));
+ S.flash(cl((t-TBURST)/0.03)*(1-cl((t-TBURST-0.03)/0.2))*0.9,'#fff');if(t>8.3)S.flash(cl((t-8.3)/0.15),'#fff');
+};
+window.READY=true;
+</script></body></html>

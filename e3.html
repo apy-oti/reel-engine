@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,impulse,rng} from './lib.js';
+import {WHITE,GREY,CORAL as CH,font,fit,letters,mono,chrome,cl,lerp,eOut,eIn,eIO,eExpo} from './ui.js';
+const OFF=15,S=await setup({sceneNo:3,total:6,tcOffset:OFF,title:'OWN THE INBOX'});const {scene,cam,makePoints,bloom,fx,ui:x}=S;const rnd=rng(33);
+const TOPY=0.7,BOTY=-2.3,RT=1.75,RB=1.15,DZ=0.42,HOLE=0.3;
+// bucket wireframe as points
+const BP=[];
+for(let i=0;i<260;i++){const a=i/260*Math.PI*2;BP.push([Math.cos(a)*RT,TOPY,Math.sin(a)*RT*DZ,1])}
+for(let i=0;i<200;i++){const a=i/200*Math.PI*2;BP.push([Math.cos(a)*RB,BOTY,Math.sin(a)*RB*DZ,.8])}
+for(const side of [-1,1])for(let i=0;i<120;i++){const u=i/119;BP.push([side*lerp(RT,RB,u),lerp(TOPY,BOTY,u),0,.9])}
+for(let k=0;k<10;k++){const a=Math.PI+k/9*Math.PI;for(let i=0;i<50;i++){const u=i/49;BP.push([Math.cos(a)*lerp(RT,RB,u),lerp(TOPY,BOTY,u),Math.sin(a)*lerp(RT,RB,u)*DZ,.25])}}
+const BK=makePoints(BP.length);{const p=BK.geometry.attributes.position.array,c=BK.geometry.attributes.color.array,s=BK.geometry.attributes.size.array;
+ BP.forEach((b,i)=>{p.set([b[0],b[1],b[2]],i*3);const v=b[3];c.set([.85*v,.84*v,.82*v],i*3);s[i]=b[3]<.5?.11:.17})}
+// hole glow
+const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const g2=c.getContext('2d');const g=g2.createRadialGradient(128,128,0,128,128,128);
+ g.addColorStop(0,'rgba(255,200,170,1)');g.addColorStop(.3,'rgba(255,92,54,.6)');g.addColorStop(1,'rgba(255,92,54,0)');g2.fillStyle=g;g2.fillRect(0,0,256,256);return new THREE.CanvasTexture(c)})();
+const hole=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}));hole.position.set(0,BOTY,0);scene.add(hole);
+// customer particles
+const N=1500,PER=3.3,P=makePoints(N),D=[];
+for(let i=0;i<N;i++){const a=rnd()*Math.PI*2,r=Math.sqrt(rnd());D.push({off:rnd()*PER,xs:(rnd()-.5)*2.6,zs:(rnd()-.5)*.8,ax:Math.cos(a)*r*1.3,az:Math.sin(a)*r*.45,ay:-0.3+rnd()*0.7,
+ hx:(rnd()-.5)*.36,hz:(rnd()-.5)*.12,dx:(rnd()-.5)*1.4,sw:rnd()*6,c:rnd()<.3,s:.24+rnd()*.2})}
+const v=new THREE.Vector3();const proj=(X,Y,Z)=>{v.set(X,Y,Z).project(cam);return [(v.x+1)/2*1080,(1-v.y)/2*1920]};
+const LB1=['They didn’t leave','because of you.'],LB2=['You just stopped','showing up.'];const TS=fit(x,[...LB1,...LB2],'IBD',900,100);
+window.renderAt=t=>{
+ const push=eIO((t-6.9)/2.6);
+ cam.position.set(lerp(Math.sin(t*0.35)*0.6,0,push),lerp(1.4,-0.4,push),lerp(12.5,7.2,push));cam.lookAt(0,lerp(-0.5,-2.0,push),0);cam.updateMatrixWorld();
+ const fo=1-eIn((t-9.35)/0.55);
+ BK.material.uniforms.uA.value=eOut((t-0.1)/0.8)*fo;
+ hole.scale.setScalar((0.55+Math.sin(t*5)*0.08)*(1+impulse(t,[2.4],5)*0.6));hole.material.opacity=eOut((t-1.6)/0.6)*fo;
+ const pp=P.geometry.attributes.position.array,pc=P.geometry.attributes.color.array,ps=P.geometry.attributes.size.array;
+ D.forEach((d,i)=>{if(t<d.off+0.35){ps[i]=0;return}const age=(t-0.35-d.off)%PER;let X,Y,Z,b=1,k=0;
+  if(age<0.75){const u=eIn(age/0.75);X=lerp(d.xs,d.ax,u);Y=lerp(6.8,d.ay,u);Z=lerp(d.zs,d.az,u)}
+  else if(age<1.95){const u=eIO((age-0.75)/1.2);const sw=Math.sin(u*Math.PI)*0.35;X=lerp(d.ax,d.hx,u)+Math.sin(d.sw+u*5)*sw;Y=lerp(d.ay,BOTY+0.05,u);Z=lerp(d.az,d.hz,u)}
+  else{const u=(age-1.95)/1.35;X=d.hx+d.dx*u;Y=BOTY-eIn(u)*7.5-u*0.6;Z=d.hz;k=cl(u*1.4);b=1-u*0.85}
+  pp.set([X,Y,Z],i*3);const w=d.c?[CORAL.r*1.2,CORAL.g*1.2,CORAL.b*1.2]:[1.15,1.08,1.0];const g=[.26,.26,.28];
+  pc.set([lerp(w[0],g[0],k)*b,lerp(w[1],g[1],k)*b,lerp(w[2],g[2],k)*b],i*3);ps[i]=d.s*(1-k*0.4)});
+ P.geometry.attributes.position.needsUpdate=P.geometry.attributes.color.needsUpdate=P.geometry.attributes.size.needsUpdate=true;P.material.uniforms.uA.value=fo;
+ bloom.strength=0.75;fx.uniforms.uCA.value=0.0012;
+ S.render(t);x.clearRect(0,0,1080,1920);
+ letters(x,LB1[0],540,420,{size:TS,align:'center',t,t0:0.4,t1:4.5});letters(x,LB1[1],540,420+TS*1.08,{size:TS,align:'center',t,t0:0.7,t1:4.5});
+ letters(x,LB2[0],540,420,{size:TS,align:'center',t,t0:4.95,t1:9.35});letters(x,LB2[1],540,420+TS*1.08,{size:TS,align:'center',color:CH,t,t0:5.3,t1:9.35,glow:18});
+ // labels
+ const la=eOut((t-1.2)/0.5)*(1-eIO((t-6.6)/0.5));
+ if(la>0){const [ax,ay]=proj(-2.15,1.75,0);mono(x,'NEW CUSTOMERS',ax+6,ay,{size:24,alpha:la,ls:5});
+  x.globalAlpha=la;x.strokeStyle='rgba(255,255,255,0.5)';x.lineWidth=2;x.beginPath();x.moveTo(ax-14,ay-24);x.lineTo(ax-14,ay+70);x.stroke();
+  x.beginPath();x.moveTo(ax-24,ay+58);x.lineTo(ax-14,ay+72);x.lineTo(ax-4,ay+58);x.stroke();x.globalAlpha=1}
+ const lb=eOut((t-2.4)/0.5)*fo;
+ if(lb>0){const [hx,hy]=proj(0,BOTY,0);const ex=hx-110,ey=hy+120;x.globalAlpha=lb;x.strokeStyle=CH;x.lineWidth=2.5;x.beginPath();x.moveTo(hx-30,hy+20);x.lineTo(ex+12,ey-8);x.lineTo(ex-20,ey-8);x.stroke();
+  x.fillStyle=CH;x.beginPath();x.arc(hx-30,hy+20,6,0,7);x.fill();x.globalAlpha=1;
+  mono(x,'NO FOLLOW-UP',ex-28,ey,{size:24,color:CH,alpha:lb,ls:5,align:'right'});mono(x,'CUSTOMERS FORGET YOU',ex-28,ey+36,{size:20,alpha:lb*0.8,ls:4,align:'right'})}
+ chrome(x,OFF+t);S.hud(t,'03 / THE LEAK',1);
+};
+window.READY=true;
+</script></body></html>

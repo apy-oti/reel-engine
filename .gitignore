@@ -1,0 +1,7 @@
+node_modules/
+*.mp4
+log*
+*log1
+*log2
+final/
+q_*.png

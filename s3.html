@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,INK,CORALHEX,cl,lerp,eOut,eIn,eIO,eExpo,impulse,rng,rr} from './lib.js';
+const S=await setup({sceneNo:3,tcOffset:9});const {scene,cam,word,canvasPlane,makePoints,bloom,fx}=S;const rnd=rng(33);
+const tg=new THREE.Group();tg.position.z=-10;cam.add(tg);
+const t1=word('I BUILD',{h:0.62,y:3.2,maxW:4.6,parent:tg}),t2=word('THE MACHINE.',{h:0.8,y:2.3,maxW:4.7,color:CORALHEX,parent:tg});
+tg.traverse(o=>{if(o.material){o.material.depthTest=false;o.renderOrder=10}});
+const CARDS=[['Welcome series','Trigger: someone joins your list','FLOW 01'],['Abandoned cart','Trigger: left without paying','FLOW 02'],
+ ['Browse follow-up','Trigger: looked, did not buy','FLOW 03'],['Win-back','Trigger: 60 days quiet','FLOW 04']];
+function drawCard(x,[ti,sub,tag],on){
+ x.shadowColor='rgba(0,0,0,0)';x.fillStyle='#f3f1eb';rr(x,8,8,984,264,40);x.fill();
+ if(on){x.strokeStyle=CORALHEX;x.lineWidth=8;rr(x,8,8,984,264,40);x.stroke()}
+ x.fillStyle=on?CORALHEX:'#2a2a30';rr(x,48,62,156,156,36);x.fill();
+ x.strokeStyle='#fff';x.lineWidth=9;x.lineJoin='round';rr(x,82,104,88,64,10);x.stroke();x.beginPath();x.moveTo(86,110);x.lineTo(126,142);x.lineTo(166,110);x.stroke();
+ x.fillStyle='#8a8a94';x.font='26px MO';x.fillText(tag,240,92);
+ x.fillStyle='#111114';x.font='64px IBD';x.fillText(ti,236,160);
+ x.fillStyle='#6b6b74';x.font='34px IM';x.fillText(sub,238,214);
+ x.fillStyle=on?CORALHEX:'#c9c6bf';rr(x,808,104,140,76,38);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(on?910:846,142,28,0,7);x.fill();
+ if(on){x.fillStyle=CORALHEX;x.font='bold 24px MO';x.fillText('LIVE',840,224)}}
+const cards=CARDS.map((c,i)=>{const g=new THREE.Group();scene.add(g);
+ const off=canvasPlane(1000,280,4.6,x=>drawCard(x,c,false),g),on=canvasPlane(1000,280,4.6,x=>drawCard(x,c,true),g);on.position.z=0.002;off.material.color.setScalar(0.84);on.material.color.setScalar(0.84);
+ g.userData={off,on,y:0.15-i*1.55,tin:0.35+i*0.22,ton:2.0+i*0.3,side:i%2?1:-1};return g});
+// connector spine + pulses
+const spine=new THREE.Mesh(new THREE.PlaneGeometry(0.035,4.65),new THREE.MeshBasicMaterial({color:0x3a3a44,transparent:true}));spine.position.set(-2.62,-2.17,-0.05);scene.add(spine);
+const NP=60,PU=makePoints(NP);{const c=PU.geometry.attributes.color.array,s=PU.geometry.attributes.size.array;for(let i=0;i<NP;i++){c.set([CORAL.r*2,CORAL.g*2,CORAL.b*2],i*3);s[i]=i%6===0?0.9:0.35}}
+const pud=[...Array(NP)].map((_,i)=>({o:(i/NP),k:i%6===0}));
+// euro sprites
+const ec=document.createElement('canvas');ec.width=ec.height=128;{const x=ec.getContext('2d');x.font='110px IB';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText('€',64,70)}
+const etex=new THREE.CanvasTexture(ec);const NE=140,EU=makePoints(NE,scene,etex);const ED=[];
+for(let i=0;i<NE;i++){const ci=i%4;ED.push({ci,t0:2.2+ci*0.3+rnd()*2.6,vx:-1.6+rnd()*3.4,vy:1.6+rnd()*2.4,vz:-rnd()*2.5,s:3.6+rnd()*3})}
+{const c=EU.geometry.attributes.color.array;ED.forEach((e,i)=>{const w=rnd()<.5;c.set(w?[.55,.52,.48]:[CORAL.r*.75,CORAL.g*.75,CORAL.b*.75],i*3)})}
+window.renderAt=t=>{
+ const out=eIn((t-5.35)/0.6);
+ cam.position.set(Math.sin(t*0.55)*2.4,-0.9+Math.sin(t*0.4)*0.3,lerp(13.8,12.2,eIO(t/5.4))-out*3);cam.lookAt(0,-1.6,0);
+ const ons=cards.map(c=>c.userData.ton);const sh=impulse(t,ons,18)*0.05;cam.position.x+=Math.sin(t*95)*sh;cam.position.y+=Math.cos(t*81)*sh;
+ [t1,t2].forEach((L,li)=>L.letters.forEach((m,j)=>{const p=eOut((t-0.1-li*0.35-j*0.03)/0.4);m.material.opacity=p*(1-out);const r=m.userData.rest;
+  m.position.set(r.x,r.y-(1-p)*0.45,0);m.rotation.x=(1-p)*1.3}));
+ cards.forEach((g,i)=>{const u=g.userData;const p=eExpo((t-u.tin)/0.7);
+  g.position.set(u.side*(1-p)*7,u.y,lerp(-28,0,p)+eIn((t-5.3-i*0.06)/0.5)*16);g.rotation.set((1-p)*0.6,u.side*(1-p)*1.3,u.side*(1-p)*0.3);
+  const on=cl((t-u.ton)/0.12);u.on.material.opacity=on*cl(p*3);u.off.material.opacity=cl(p*3);
+  const e=t-u.ton;g.scale.setScalar(e>0?1+0.09*Math.exp(-e*9)*Math.cos(e*28):1)});
+ spine.material.opacity=eOut((t-1.2)/0.5)*(1-out);
+ const pp=PU.geometry.attributes.position.array;const pa=cl((t-2.2)/0.3)*(1-out);PU.material.uniforms.uA.value=pa;
+ pud.forEach((p,i)=>{const y=0.15-((p.o+t*0.55)%1)*4.65;pp.set([-2.62,y,0.02],i*3)});PU.geometry.attributes.position.needsUpdate=true;
+ const ep=EU.geometry.attributes.position.array,es=EU.geometry.attributes.size.array;
+ ED.forEach((e,i)=>{const a=t-e.t0;const cy=cards[e.ci].userData.y;if(a<0||a>1.6){es[i]=0;ep.set([0,0,0],i*3);return}
+  ep.set([1.6+e.vx*a,cy+0.1+e.vy*a-0.8*a*a,e.vz*a-0.3],i*3);es[i]=e.s*Math.sin(cl(a/1.6)*Math.PI)*(1-out)});
+ EU.geometry.attributes.position.needsUpdate=EU.geometry.attributes.size.needsUpdate=true;
+ bloom.strength=0.8+impulse(t,ons,9)*0.5+out;fx.uniforms.uCA.value=0.0015+impulse(t,ons,14)*0.012+out*0.05;
+ S.render(t);S.hud(t,t<2?'UI / ASSEMBLY':'FLOWS / LIVE',eOut(t/0.3)*(1-out));
+ S.flash(cl((t-5.75)/0.12)*(1-cl((t-5.92)/0.08)),CORALHEX);
+};
+window.READY=true;
+</script></body></html>

@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,impulse,rng} from './lib.js';
+import {WHITE,GREY,CORAL as CH,font,fit,letters,mono,panel,chrome,cl,lerp,eOut,eIn,eIO,eExpo,rr} from './ui.js';
+const OFF=5,S=await setup({sceneNo:2,total:6,tcOffset:OFF,title:'OWN THE INBOX'});const {scene,cam,makePoints,bloom,fx,ui:x}=S;const rnd=rng(22);
+// scrolling feed field
+const COLS=12,ROWS=46,N=COLS*ROWS,P=makePoints(N),D=[];
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)D.push([(c-(COLS-1)/2)*1.05+(rnd()-.5)*.1,r*0.9,-6-rnd()*3,rnd()]);
+{const c=P.geometry.attributes.color.array,s=P.geometry.attributes.size.array;D.forEach((d,i)=>{c.set([.3,.3,.32],i*3);s[i]=.16+d[3]*.1})}
+const ROWT=['You post on Instagram.','You pay for ads.','People buy once.'];
+const RS=fit(x,ROWT,'IBD',700,66,-1.5);const RY=[650,830,1010],RA=[0.7,2.1,3.5];
+const TS=6.35;
+function check(cx,cy,on,p,a){
+ const s=1+(on>0?0.22*Math.exp(-on*10)*Math.cos(on*26):0);x.save();x.translate(cx,cy);x.scale(s,s);x.globalAlpha=a;
+ if(on>0){x.fillStyle=CH;rr(x,-36,-36,72,72,18);x.fill();x.strokeStyle='#fff';x.lineWidth=9;x.lineCap='round';x.lineJoin='round';
+  const pts=[[-16,1],[-4,13],[18,-13]];x.beginPath();x.moveTo(...pts[0]);const q=cl(p);if(q<0.4){const u=q/0.4;x.lineTo(lerp(pts[0][0],pts[1][0],u),lerp(pts[0][1],pts[1][1],u))}
+  else{x.lineTo(...pts[1]);const u=(q-0.4)/0.6;x.lineTo(lerp(pts[1][0],pts[2][0],u),lerp(pts[1][1],pts[2][1],u))}x.stroke()}
+ else{x.strokeStyle='rgba(255,255,255,0.35)';x.lineWidth=4;rr(x,-34,-34,68,68,17);x.stroke()}
+ x.restore()}
+window.renderAt=t=>{
+ const freeze=Math.min(t,TS);const pp=P.geometry.attributes.position.array;
+ D.forEach((d,i)=>{let y=d[1]+freeze*1.3;y=(y%(ROWS*0.9))-ROWS*0.45;pp.set([d[0],y,d[2]],i*3)});P.geometry.attributes.position.needsUpdate=true;
+ const fo=1-eIn((t-9.35)/0.55);P.material.uniforms.uA.value=eOut(t/0.6)*lerp(1,0.3,eIO((t-TS)/0.4))*fo;
+ cam.position.set(0,0,12-eIO(t/10)*1.2);cam.lookAt(0,0,0);bloom.strength=0.6;fx.uniforms.uCA.value=0.0012;
+ S.render(t);x.clearRect(0,0,1080,1920);
+ const dimR=lerp(1,0.28,eIO((t-TS)/0.5))*fo;
+ mono(x,'SOUND FAMILIAR?',540,440,{size:30,align:'center',alpha:eOut((t-0.2)/0.5)*dimR,ls:8});
+ RY.forEach((Y,i)=>{const ta=RA[i],p=eExpo((t-ta)/0.7);if(p<=0)return;const dx=(1-p)*70;
+  panel(x,80+dx,Y-74,920,148,{alpha:cl(p*1.5)*dimR,r:30});
+  const on=t-(ta+0.75);check(160+dx,Y,on,on/0.28,cl(p*1.5)*dimR);
+  letters(x,ROWT[i],236+dx,Y+RS*0.36,{size:RS,t,t0:ta+0.1,alpha:dimR,stagger:0.012})});
+ const AS=fit(x,['And then...'],'IBD',800,96);
+ letters(x,'And then...',540,1250,{size:AS,align:'center',t,t0:5.1,alpha:lerp(1,0.5,eIO((t-TS)/0.5))*fo,stagger:0.03});
+ letters(x,'silence.',540,1440,{size:176,align:'center',color:CH,t,t0:TS,t1:9.35,stagger:0.05,dur:0.9,rise:20,glow:28});
+ chrome(x,OFF+t);S.hud(t,'02 / SOUND FAMILIAR',1);
+};
+window.READY=true;
+</script></body></html>

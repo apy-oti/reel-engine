@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,INK,CORALHEX,cl,lerp,eOut,eIn,eIO,eExpo,impulse,rng,rr} from './lib.js';
+const S=await setup({sceneNo:6,tcOffset:26});const {scene,cam,word,canvasPlane,makePoints,bloom,fx}=S;const rnd=rng(66);
+const w1=word('OWN THE',{h:1.15,y:2.2,maxW:5.6,sample:4}),w2=word('INBOX.',{h:2.1,y:0.5,maxW:5.9,color:CORALHEX,sample:4});
+const pts=[...w1.letters,...w2.letters].flatMap(m=>m.userData.pts);const WH=new THREE.Color(1,.97,.93);
+const N=8000,P=makePoints(N),D=[];for(let i=0;i<N;i++){const tp=pts[Math.floor(rnd()*pts.length)];const a=rnd()*Math.PI*2,e=(rnd()-.5)*Math.PI,r=0.2+rnd()*0.6;
+ D.push({tx:tp[0],ty:tp[1],c:tp[2]===CORALHEX,dx:Math.cos(a)*Math.cos(e),dy:Math.sin(e),dz:Math.sin(a)*Math.cos(e),r:4+rnd()*10,d:rnd()*0.35,sp:(rnd()-.5)*6,s:2+rnd()*3})}
+{const c=P.geometry.attributes.color.array,s=P.geometry.attributes.size.array;D.forEach((p,i)=>{const col=p.c?CORAL:WH;c.set([col.r,col.g,col.b],i*3);s[i]=p.s*.09})}
+// ambient dust
+const ND=500,DU=makePoints(ND),DD=[];for(let i=0;i<ND;i++)DD.push([(rnd()-.5)*14,(rnd()-.5)*24,-2-rnd()*20,rnd()]);
+{const c=DU.geometry.attributes.color.array,s=DU.geometry.attributes.size.array;DD.forEach((d,i)=>{c.set([.35,.33,.31],i*3);s[i]=.12})}
+const sub=canvasPlane(1200,80,6.2,()=>{});sub.position.set(0,-1.15,0);
+const SUB='KLAVIYO E-MAILMARKETING  ·  ANTWERPEN';
+const cta=canvasPlane(900,190,4.2,x=>{x.fillStyle=CORALHEX;rr(x,6,6,888,178,89);x.fill();x.fillStyle='#fff';x.textAlign='center';let f=64;x.font=f+'px IB';const s="DM 'INBOX' OM TE STARTEN";while(x.measureText(s).width>800){f-=2;x.font=f+'px IB'}x.fillText(s,450,118)});
+cta.position.set(0,-2.6,0);cta.material.color.setScalar(0.82);
+// gooey burst origin: big core flash at t=0
+window.renderAt=t=>{
+ cam.position.set(Math.sin(t*0.6)*0.5,0.2,lerp(15,12.2,eOut(t/3.6)));cam.lookAt(0,0.2,0);cam.rotation.z=lerp(-0.06,0,eOut(t/1.4));
+ const pp=P.geometry.attributes.position.array;
+ D.forEach((p,i)=>{const ex=eOut(t/0.35)*p.r;const pr=eIO((t-0.12-p.d*0.5)/0.72);const ang=(1-pr)*p.sp;
+  const sx=p.dx*ex,sy=p.dy*ex+0.8,sz=p.dz*ex;const ox=sx-p.tx,oy=sy-p.ty,ca=Math.cos(ang),sn=Math.sin(ang);
+  pp.set([p.tx+(ox*ca-oy*sn)*(1-pr),p.ty+(ox*sn+oy*ca)*(1-pr),sz*(1-pr)],i*3)});
+ P.geometry.attributes.position.needsUpdate=true;P.material.uniforms.uA.value=1-eIO((t-1.15)/0.4)*0.85;
+ const sA=eOut((t-1.1)/0.3);[...w1.letters,...w2.letters].forEach((m,j)=>{m.material.opacity=sA;m.scale.setScalar(1+0.07*Math.sin(cl((t-1.1-j*0.025)/0.3)*Math.PI))});
+ const dp=DU.geometry.attributes.position.array;DD.forEach((d,i)=>dp.set([d[0]+Math.sin(t*0.5+d[3]*9)*0.3,d[1]+t*0.25*(0.5+d[3]),d[2]],i*3));DU.geometry.attributes.position.needsUpdate=true;
+ const n=Math.floor(SUB.length*cl((t-1.45)/0.7));const cur=Math.floor(t*4)%2&&t<2.6;
+ sub.userData.redraw(x=>{x.font='40px MO';x.fillStyle='#b0aeb8';x.textAlign='center';const s=SUB.slice(0,n)+(cur?'_':' ');x.fillText(s,600,52)});
+ const cp=cl((t-2.15)/0.45);const back=t>2.15?1+0.35*Math.exp(-(t-2.15)*7)*Math.sin((t-2.15)*18):0;cta.scale.setScalar(Math.max(0,eOut(cp)*back));cta.material.opacity=cl(cp*3);
+ const pulse=t>2.8?0.06*Math.sin((t-2.8)*7):0;cta.scale.multiplyScalar(1+pulse*0.5);
+ bloom.strength=0.8+(1-eOut(t/0.5))*2.5+impulse(t,[2.15],8)*0.5;fx.uniforms.uCA.value=0.0015+(1-eOut(t/0.4))*0.05;
+ S.render(t);S.hud(t,'OUTRO / LOCKUP',eOut((t-0.2)/0.4));
+ S.flash((1-cl(t/0.18))*1,CORALHEX);
+};
+window.READY=true;
+</script></body></html>

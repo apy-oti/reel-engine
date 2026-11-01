@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,impulse,rng} from './lib.js';
+import {WHITE,CORAL as CH,font,fit,chrome,cl,lerp,eOut,eIn,eIO} from './ui.js';
+const OFF=0,S=await setup({sceneNo:1,total:6,tcOffset:OFF,title:'OWN THE INBOX'});const {scene,cam,makePoints,bloom,fx,ui:x}=S;const rnd=rng(11);
+const N=900,P=makePoints(N),D=[];for(let i=0;i<N;i++)D.push([(rnd()-.5)*18,(rnd()-.5)*30,-rnd()*44,rnd()]);
+{const c=P.geometry.attributes.color.array,s=P.geometry.attributes.size.array;D.forEach((d,i)=>{const w=d[3]<.12;c.set(w?[CORAL.r*.9,CORAL.g*.9,CORAL.b*.9]:[.42,.41,.4],i*3);s[i]=.1+d[3]*.12})}
+const LINES=[['You have',WHITE],['customers',WHITE],['you will',WHITE],['never see',CH],['again.',CH]];
+const SZ=fit(x,LINES.map(l=>l[0]),'IBD',880,176,-3),LH=SZ*1.0,TOP=960-LH*2.5+SZ*0.78;
+const total=LINES.reduce((a,l)=>a+l[0].length,0);const T0=0.3,TT=2.5;
+const hash=(a,b)=>{const s=Math.sin(a*127.1+b*311.7)*43758.5453;return s-Math.floor(s)};
+window.renderAt=t=>{
+ cam.position.set(Math.sin(t*0.4)*0.3,0,lerp(14,11.5,eIO(t/5)));cam.lookAt(0,0,-20);
+ const pp=P.geometry.attributes.position.array;D.forEach((d,i)=>{let z=d[2]+t*4;z=((z+44)%46)-44;pp.set([d[0],d[1],z],i*3)});P.geometry.attributes.position.needsUpdate=true;
+ P.material.uniforms.uA.value=eOut(t/0.8)*(1-eIn((t-4.3)/0.6));
+ const GL=3.35,gl=cl(1-Math.abs(t-GL)/0.16);fx.uniforms.uCA.value=0.0012+gl*0.01;bloom.strength=0.7;
+ S.render(t);
+ x.clearRect(0,0,1080,1920);
+ const out=eIn((t-4.25)/0.55);
+ font(x,SZ,'IBD',-3);x.textAlign='left';let gi=0,lastX=110,lastY=TOP;
+ LINES.forEach(([s,col],li)=>{const Y=TOP+li*LH-out*40;let cx=110;
+  for(let i=0;i<s.length;i++){const ta=T0+gi*(TT/total);gi++;const ch=s[i];const a=cl((t-ta)/0.07);
+   const px=110+x.measureText(s.slice(0,i+1)).width-x.measureText(ch).width;if(a>0){lastX=px+x.measureText(ch).width;lastY=Y}
+   if(a<=0||ch===' ')continue;x.globalAlpha=a*(1-out);
+   if(gl>0&&li>=3){const fr=Math.floor(t*60);for(let b=0;b<5;b++){const y0=Y-SZ*0.8+b*SZ*0.2;const dx=(hash(b+li*7,fr)-.5)*70*gl;
+     x.save();x.beginPath();x.rect(0,y0,1080,SZ*0.2+1);x.clip();x.fillStyle='rgba(90,200,255,0.6)';x.fillText(ch,px+dx+8*gl,Y);x.fillStyle=col;x.fillText(ch,px+dx,Y);x.restore()}}
+   else{x.fillStyle=col;x.fillText(ch,px,Y)}}});
+ x.globalAlpha=1;
+ const typing=t<T0+TT+0.05;const blink=typing||Math.floor(t*2.2)%2===0;
+ if(blink&&t>0.15&&out<1){x.globalAlpha=1-out;x.fillStyle=CH;x.fillRect(lastX+10,lastY-SZ*0.72,Math.max(8,SZ*0.08),SZ*0.86);x.globalAlpha=1}
+ chrome(x,OFF+t);S.hud(t,'01 / HOOK',eOut(t/0.5));
+};
+window.READY=true;
+</script></body></html>

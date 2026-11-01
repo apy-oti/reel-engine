@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,CORALHEX,impulse,rng} from './lib.js';
+import {WHITE,GREY,CORAL as CH,font,fit,letters,mono,panel,chrome,cl,lerp,eOut,eIn,eIO,eExpo,rr} from './ui.js';
+const OFF=52,S=await setup({sceneNo:6,total:6,tcOffset:OFF,title:'OWN THE INBOX'});const {scene,cam,word,makePoints,bloom,fx,ui:x}=S;const rnd=rng(66);
+const w1=word('OWN THE',{h:1.15,y:2.55,maxW:4.7,sample:6}),w2=word('INBOX.',{h:2.1,y:0.9,maxW:5.0,color:CORALHEX,sample:6});
+const pts=[...w1.letters,...w2.letters].flatMap(m=>m.userData.pts);const WH=new THREE.Color(1,.97,.93);
+const N=8000,P=makePoints(N),D=[];for(let i=0;i<N;i++){const tp=pts[Math.floor(rnd()*pts.length)];const a=rnd()*Math.PI*2,e=(rnd()-.5)*Math.PI,r=3+rnd()*9;
+ D.push({tx:tp[0],ty:tp[1],c:tp[2]===CORALHEX,dx:Math.cos(a)*Math.cos(e),dy:Math.sin(e),dz:Math.sin(a)*Math.cos(e),r,d:rnd()*0.35,sp:(rnd()-.5)*5,s:2+rnd()*3})}
+{const c=P.geometry.attributes.color.array,s=P.geometry.attributes.size.array;D.forEach((p,i)=>{const col=p.c?CORAL:WH;c.set([col.r,col.g,col.b],i*3);s[i]=p.s*.08})}
+const ND=500,DU=makePoints(ND),DD=[];for(let i=0;i<ND;i++)DD.push([(rnd()-.5)*14,(rnd()-.5)*24,-2-rnd()*20,rnd()]);
+{const c=DU.geometry.attributes.color.array,s=DU.geometry.attributes.size.array;DD.forEach((d,i)=>{c.set([.33,.32,.3],i*3);s[i]=.14})}
+const TB=3.1;const SUB='EMAIL MARKETING THAT BRINGS CUSTOMERS BACK';
+window.renderAt=t=>{
+ cam.position.set(Math.sin(t*0.5)*0.35,0.4,lerp(13.6,12.4,eOut((t-TB)/4)));cam.lookAt(0,0.7,0);
+ const pp=P.geometry.attributes.position.array;const a0=t-TB;P.visible=a0>0&&a0<1.8;
+ if(P.visible){D.forEach((p,i)=>{const ex=eOut(a0/0.3)*p.r;const pr=eIO((a0-0.15-p.d*0.5)/0.75);const ang=(1-pr)*p.sp;
+  const sx=p.dx*ex,sy=p.dy*ex+1.2,sz=p.dz*ex;const ox=sx-p.tx,oy=sy-p.ty,ca=Math.cos(ang),sn=Math.sin(ang);
+  pp.set([p.tx+(ox*ca-oy*sn)*(1-pr),p.ty+(ox*sn+oy*ca)*(1-pr),sz*(1-pr)],i*3)});
+  P.geometry.attributes.position.needsUpdate=true;P.material.uniforms.uA.value=1-eIO((a0-1.15)/0.45)}
+ const sA=eOut((a0-1.1)/0.35);[...w1.letters,...w2.letters].forEach((m,j)=>{m.material.opacity=sA;m.scale.setScalar(1+0.06*Math.sin(cl((a0-1.1-j*0.025)/0.35)*Math.PI))});
+ const dp=DU.geometry.attributes.position.array;DD.forEach((d,i)=>dp.set([d[0]+Math.sin(t*0.5+d[3]*9)*0.3,d[1]+t*0.22*(0.5+d[3]),d[2]],i*3));DU.geometry.attributes.position.needsUpdate=true;
+ DU.material.uniforms.uA.value=eOut(t/0.6);
+ bloom.strength=0.75+impulse(t,[TB],6)*1.2;fx.uniforms.uCA.value=0.0012+impulse(t,[TB],10)*0.012;
+ S.render(t);x.clearRect(0,0,1080,1920);
+ // intro: I'm Apy
+ font(x,190,'IBD',-4);const wI=x.measureText('I’m ').width,wA=x.measureText('Apy.').width,X0=540-(wI+wA)/2;
+ letters(x,'I’m',X0,830,{size:190,ls:-4,t,t0:0.2,t1:2.85,stagger:0.04});letters(x,'Apy.',X0+wI,830,{size:190,ls:-4,color:CH,t,t0:0.45,t1:2.85,stagger:0.05,glow:20});
+ letters(x,'I build email systems that',540,950,{size:48,f:'IM',ls:0,color:GREY,align:'center',t,t0:0.95,t1:2.85,stagger:0.008,rise:16});
+ letters(x,'bring your customers back.',540,1015,{size:48,f:'IM',ls:0,color:GREY,align:'center',t,t0:1.1,t1:2.85,stagger:0.008,rise:16});
+ // outro UI
+ const n=Math.floor(SUB.length*cl((t-4.5)/0.8));const cur=Math.floor(t*4)%2&&t<5.6&&t>4.4;
+ mono(x,SUB.slice(0,n)+(cur?'_':''),540,1160,{size:28,color:'#b0aeb8',align:'center',ls:4});
+ const tc=5.1,cp=cl((t-tc)/0.45);if(cp>0){const back=1+0.3*Math.exp(-(t-tc)*7)*Math.sin((t-tc)*18);const br=t>5.8?1+0.02*Math.sin((t-5.8)*6):1;const s=Math.max(0,eOut(cp)*back)*br;
+  x.save();x.translate(540,1330);x.scale(s,s);x.globalAlpha=cl(cp*3);x.shadowColor='rgba(255,92,54,0.55)';x.shadowBlur=50;x.fillStyle=CH;rr(x,-330,-80,660,160,80);x.fill();x.shadowBlur=0;
+  font(x,64,'IB',1);x.fillStyle='#fff';x.textAlign='center';x.fillText('DM ‘AUDIT’',0,23);x.restore();x.textAlign='left';x.globalAlpha=1}
+ mono(x,'FREE SHOP TEST  ·  THIS WEEK',540,1475,{size:24,color:GREY,align:'center',alpha:eOut((t-5.7)/0.5),ls:6});
+ chrome(x,OFF+t);S.hud(t,'06 / CONTACT',1);
+};
+window.READY=true;
+</script></body></html>

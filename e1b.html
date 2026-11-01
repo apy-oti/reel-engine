@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,impulse,rng} from './lib.js';
+import {WHITE,CORAL as CH,font,fit,chrome,cl,lerp,eOut,eIn,eIO,eExpo} from './ui.js';
+const OFF=0,S=await setup({sceneNo:1,total:6,tcOffset:OFF,title:'OWN THE INBOX'});const {scene,cam,bloom,fx,ui:x}=S;const rnd=rng(12);
+// warp streaks
+const NS=1600,SS=[];for(let i=0;i<NS;i++)SS.push({a:rnd()*Math.PI*2,r:1.0+Math.pow(rnd(),.7)*11,z0:-rnd()*170,c:rnd()<.28,b:.35+rnd()*.65});
+const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NS*6),3));sg.setAttribute('color',new THREE.BufferAttribute(new Float32Array(NS*6),3));
+const SL=new THREE.LineSegments(sg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));SL.frustumCulled=false;scene.add(SL);
+const LB=new THREE.Color(.75,.82,1);
+const L=[['YOU HAVE',WHITE],['CUSTOMERS',WHITE],['YOU WILL',WHITE],['NEVER SEE',CH],['AGAIN.',CH]];
+const SZ=fit(x,L.map(l=>l[0]),'IB',900,190,-2),LH=SZ*0.98,TOP=960-LH*2.5+SZ*0.74;
+const TS=[-0.2,0.3,0.6,0.9,1.25];
+const hash=(a,b)=>{const s=Math.sin(a*127.1+b*311.7)*43758.5453;return s-Math.floor(s)};
+let tr=0;
+window.renderAt=t=>{
+ const sp=lerp(1.4,0.35,eOut(t/1.8))+eIn((t-2.3)/0.7)*2.5;
+ tr=26*t+40*(1-Math.exp(-t*2.5))+50*eIn((t-2.3)/0.7);
+ const P=sg.attributes.position.array,C=sg.attributes.color.array;const sa=1;
+ SS.forEach((s,i)=>{let z=s.z0+tr*2.2;z=((z%172)+172)%172-160;const Ln=0.4+sp*14,X=Math.cos(s.a)*s.r,Y=Math.sin(s.a)*s.r;P.set([X,Y,z,X,Y,z-Ln],i*6);
+  const col=s.c?CORAL:LB,b=s.b*(z>9?0:1)*1.5*lerp(0.55,1,sp/1.4);C.set([col.r*b,col.g*b,col.b*b,0,0,0],i*6)});
+ sg.attributes.position.needsUpdate=sg.attributes.color.needsUpdate=true;
+ const hits=TS.map(v=>v+0.05),sh=impulse(t,hits,18);
+ cam.position.set(Math.sin(t*97)*sh*0.08,Math.cos(t*83)*sh*0.08,10);cam.lookAt(0,0,-50);cam.rotation.z=Math.sin(t*0.9)*0.04;
+ bloom.strength=0.8+sh*0.5;fx.uniforms.uCA.value=0.0015+sh*0.008;
+ S.render(t);x.clearRect(0,0,1080,1920);
+ const out=eIn((t-2.35)/0.6),zs=1+out*0.35;
+ const dx=Math.sin(t*131)*sh*9,dy=Math.cos(t*117)*sh*9;
+ x.save();x.translate(540+dx,960+dy);x.scale(zs,zs);x.translate(-540,-960);
+ font(x,SZ,'IB',-2);x.textAlign='center';
+ L.forEach(([s,col],i)=>{const p=eExpo((t-TS[i])/0.26);if(p<=0)return;const Y=TOP+i*LH;const a=cl(p*2.2)*(1-out);
+  const gl=i===4?cl(1-Math.abs(t-1.55)/0.14):0;
+  for(let g=2;g>=0;g--){const sc=lerp(1.6+g*0.25,1,p);const al=g===0?a:a*0.18*(1-p);if(al<=0.01)continue;
+   x.save();x.translate(540,Y-SZ*0.36);x.scale(sc,sc);x.translate(-540,-(Y-SZ*0.36));x.globalAlpha=al;
+   if(g===0&&gl>0){const fr=Math.floor(t*60);for(let b=0;b<6;b++){const y0=Y-SZ*0.78+b*SZ*0.15;const o=(hash(b,fr)-.5)*80*gl;x.save();x.beginPath();x.rect(0,y0,1080,SZ*0.15+1);x.clip();
+     x.fillStyle='rgba(90,200,255,0.55)';x.fillText(s,540+o+10*gl,Y);x.fillStyle=col;x.fillText(s,540+o,Y);x.restore()}}
+   else{x.fillStyle=col;if(g===0&&col===CH){x.shadowColor=CH;x.shadowBlur=24}x.fillText(s,540,Y);x.shadowBlur=0}
+   x.restore()}});
+ x.restore();x.globalAlpha=1;x.textAlign='left';
+ // white flash on first frame impact + end
+ const fl=0;if(fl>0){x.fillStyle=`rgba(255,255,255,${fl})`;x.fillRect(0,0,1080,1920)}
+ const bk=eIn((t-2.75)/0.25);if(bk>0){x.fillStyle=`rgba(0,0,0,${bk})`;x.fillRect(0,0,1080,1920)}
+ chrome(x,OFF+t*(5/3),60);S.hud(t,'01 / HOOK',1);
+};
+window.READY=true;
+</script></body></html>

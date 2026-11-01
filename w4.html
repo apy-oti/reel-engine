@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+import {setup,THREE,CORAL,INK,CORALHEX,cl,lerp,eOut,eIn,eIO,eExpo,impulse,rng,rr} from './lib.js';
+const S=await setup({sceneNo:4,total:4,tcOffset:24,title:'OWN THE INBOX - WHY EMAIL'});const {scene,cam,word,canvasPlane,makePoints,bloom,fx}=S;const rnd=rng(404);
+const p1=word('YOUR CUSTOMERS',{h:0.9,y:2.15,maxW:5.6,sample:4}),p2=word('ARE WAITING.',{h:1.4,y:0.6,maxW:5.6,color:CORALHEX,sample:4});
+const w1=word('OWN THE',{h:1.15,y:2.2,maxW:5.6,sample:4}),w2=word('INBOX.',{h:2.1,y:0.5,maxW:5.9,color:CORALHEX,sample:4});
+const src=[...p1.letters,...p2.letters].flatMap(m=>m.userData.pts),dst=[...w1.letters,...w2.letters].flatMap(m=>m.userData.pts);
+const WH=new THREE.Color(1,.97,.93);
+const N=8000,P=makePoints(N),D=[];for(let i=0;i<N;i++){const a=src[Math.floor(rnd()*src.length)],b=dst[Math.floor(rnd()*dst.length)];
+ D.push({sx:a[0],sy:a[1],tx:b[0],ty:b[1],c:b[2]===CORALHEX,d:rnd()*0.3,sp:(rnd()-.5)*5,z:(rnd()-.5)*6,s:2+rnd()*3})}
+{const c=P.geometry.attributes.color.array,s=P.geometry.attributes.size.array;D.forEach((p,i)=>{const col=p.c?CORAL:WH;c.set([col.r,col.g,col.b],i*3);s[i]=p.s*.09})}
+const ND=500,DU=makePoints(ND),DD=[];for(let i=0;i<ND;i++)DD.push([(rnd()-.5)*14,(rnd()-.5)*24,-2-rnd()*20,rnd()]);
+{const c=DU.geometry.attributes.color.array,s=DU.geometry.attributes.size.array;DD.forEach((d,i)=>{c.set([.35,.33,.31],i*3);s[i]=.15})}
+const sub=canvasPlane(1200,80,6.2,()=>{});sub.position.set(0,-1.15,0);const SUB='EMAIL MARKETING THAT BRINGS THEM BACK';
+const cta=canvasPlane(900,190,4.2,x=>{x.fillStyle=CORALHEX;rr(x,6,6,888,178,89);x.fill();x.fillStyle='#fff';x.font='64px IB';x.textAlign='center';x.fillText("DM 'INBOX' TO START",450,118)});
+cta.position.set(0,-2.6,0);cta.material.color.setScalar(0.82);
+const TX=2.0;
+window.renderAt=t=>{
+ cam.position.set(Math.sin(t*0.5)*0.5,0.2,lerp(13.5,12.2,eOut(t/5)));cam.lookAt(0,0.4,0);
+ const hits=[0.25,0.75];const sh=impulse(t,hits,14)*0.08;cam.position.x+=Math.sin(t*95)*sh;cam.position.y+=Math.cos(t*80)*sh;
+ [p1,p2].forEach((L,li)=>L.letters.forEach((m,j)=>{const ti=hits[li]+j*0.02;const q=eExpo((t-ti)/0.3);m.material.opacity=t<TX?q:0;const r=m.userData.rest;
+  m.position.set(r.x,r.y,lerp(5,0,q));const e=t-ti;m.scale.setScalar(e>0?1+0.2*Math.exp(-e*9)*Math.cos(e*28):1)}));
+ const pp=P.geometry.attributes.position.array;P.visible=t>=TX&&t<3.5;
+ if(P.visible){D.forEach((p,i)=>{const u=eIO((t-TX-p.d)/0.75);const ang=Math.sin(u*Math.PI)*p.sp;const mx=lerp(p.sx,p.tx,u),my=lerp(p.sy,p.ty,u);
+  const ox=Math.sin(u*Math.PI)*Math.cos(ang)*1.5,oy=Math.sin(u*Math.PI)*Math.sin(ang)*1.5;pp.set([mx+ox,my+oy,Math.sin(u*Math.PI)*p.z],i*3)});
+  P.geometry.attributes.position.needsUpdate=true;P.material.uniforms.uA.value=1-eIO((t-3.05)/0.4)}
+ const sA=eOut((t-3.0)/0.3);[...w1.letters,...w2.letters].forEach((m,j)=>{m.material.opacity=sA;m.scale.setScalar(1+0.07*Math.sin(cl((t-3.0-j*0.025)/0.3)*Math.PI))});
+ const dp=DU.geometry.attributes.position.array;DD.forEach((d,i)=>dp.set([d[0]+Math.sin(t*0.5+d[3]*9)*0.3,d[1]+t*0.25*(0.5+d[3]),d[2]],i*3));DU.geometry.attributes.position.needsUpdate=true;
+ const n=Math.floor(SUB.length*cl((t-3.3)/0.8));const cur=Math.floor(t*4)%2&&t<4.5;
+ sub.userData.redraw(x=>{x.font='38px MO';x.fillStyle='#b0aeb8';x.textAlign='center';x.fillText(SUB.slice(0,n)+(cur?'_':' '),600,52)});
+ const tc=4.1;const cp=cl((t-tc)/0.45);const back=t>tc?1+0.35*Math.exp(-(t-tc)*7)*Math.sin((t-tc)*18):0;cta.scale.setScalar(Math.max(0,eOut(cp)*back)*(1+(t>4.7?0.03*Math.sin((t-4.7)*7):0)));cta.material.opacity=cl(cp*3);
+ bloom.strength=0.8+(1-eOut(t/0.4))*2+impulse(t,[TX],6)*0.8+impulse(t,[tc],8)*0.4;fx.uniforms.uCA.value=0.0015+impulse(t,hits,14)*0.025+impulse(t,[TX],10)*0.03;
+ S.render(t);S.hud(t,t<TX?'KINETIC / TYPE':'OUTRO / LOCKUP',eOut(t/0.3));
+ S.flash(1-cl(t/0.2),'#fff');
+};
+window.READY=true;
+</script></body></html>
