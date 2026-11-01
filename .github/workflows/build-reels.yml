@@ -55,7 +55,8 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           JOBS: "4"
         run: |
-          while read -r d; do python3 build_reel.py "$d"; done < todo.txt
+          mapfile -t R < todo.txt
+          for d in "${R[@]}"; do python3 build_reel.py "$d" < /dev/null; done
 
       - name: Upload videos
         if: steps.pick.outputs.count != '0'
