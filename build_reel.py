@@ -23,6 +23,7 @@ os.makedirs(work, exist_ok=True); os.makedirs(out_dir, exist_ok=True)
 env = dict(os.environ, FPS=os.environ.get("FPS", "30"), CRF=os.environ.get("CRF", "21"))
 scenes = cfg.get("scenes", [])
 SARAH = "EXAVITQu4vr4xnSDxMaL"
+JASON = "Xgbhok2GeC7jChQ5TJEl"  # Dutch, confident and direct (default)
 LIAM = "TX3LPaxmHKxFdv7VOQHJ"
 
 
@@ -233,12 +234,12 @@ def explainer():
         run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", f"sine=f=330:d={len(full)/14:.2f}", voice])
     else:
         body = {"text": full, "model_id": cfg.get("model_id", "eleven_multilingual_v2"),
-                "voice_settings": cfg.get("voice_settings", {"stability": 0.5, "similarity_boost": 0.8, "style": 0.25, "use_speaker_boost": True})}
+                "voice_settings": cfg.get("voice_settings", {"stability": 0.45, "similarity_boost": 0.8, "style": 0.3, "use_speaker_boost": True, "speed": 1.08})}
         if cfg.get("language_code"): body["language_code"] = cfg["language_code"]
-        req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{cfg.get('voice_id', SARAH)}/with-timestamps?output_format=mp3_44100_128",
+        req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{cfg.get('voice_id', JASON)}/with-timestamps?output_format=mp3_44100_128",
                                      data=json.dumps(body).encode(),
                                      headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
-        key = hashlib.md5(json.dumps([full, cfg.get("voice_id", SARAH), cfg.get("model_id"), cfg.get("voice_settings")]).encode()).hexdigest()[:14]
+        key = hashlib.md5(json.dumps([full, cfg.get("voice_id", JASON), cfg.get("model_id"), cfg.get("voice_settings")]).encode()).hexdigest()[:14]
         cj = os.path.join(CACHE, f"voice_{key}.json")
         if os.path.exists(cj):
             res = json.load(open(cj))
