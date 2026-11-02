@@ -5,39 +5,39 @@
 @font-face{font-family:IM;src:url(/Inter-Medium.otf)}
 @font-face{font-family:MO;src:url(/DejaVuSansMono.ttf)}
 @font-face{font-family:LO;src:url(/Lora-Italic.ttf)}
-:root{--gold:#ffcf5a;--gold2:#c8912e;--paper:#ece6d8;--bg:#0c0a07}
+:root{--gold:#ff5c36;--gold2:#b3260b;--paper:#ff5c36;--bg:#050506}
 html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--bg);color:#fff;font-family:IM}
 #cam{position:absolute;inset:0;transform-origin:50% 48%}
 .beat{position:absolute;inset:0;display:none}
 .center{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.small{font:64px LO;color:#eadcbd;opacity:.92;margin-bottom:26px;text-align:center;padding:0 80px;line-height:1.15}
+.small{font:64px LO;color:#d9d6cf;opacity:.92;margin-bottom:26px;text-align:center;padding:0 80px;line-height:1.15}
 .big{font:178px IB;letter-spacing:3px;line-height:.95;text-align:center;white-space:nowrap;transform-origin:50% 50%}
-.gold{background:linear-gradient(100deg,#9c6b1e 0%,#e8b54a 30%,#fff3cf 46%,#ffe7a6 52%,#e8b54a 66%,#9c6b1e 100%);background-size:320% 100%;
-  -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 28px rgba(255,185,70,.42)) drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+.gold{background:linear-gradient(100deg,#b3260b 0%,#ff5c36 30%,#ffe2d8 46%,#ffb39d 52%,#ff5c36 66%,#b3260b 100%);background-size:320% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 28px rgba(255,92,54,.45)) drop-shadow(0 6px 14px rgba(0,0,0,.6))}
 .chrome{background:linear-gradient(180deg,#ffffff 0%,#d9dde2 38%,#4a4d52 50%,#a9aeb4 62%,#f4f4f4 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 2px 0 #222) drop-shadow(0 4px 0 #161616) drop-shadow(0 8px 0 #0e0e0e) drop-shadow(0 22px 30px rgba(0,0,0,.8)) drop-shadow(0 0 30px rgba(255,200,120,.25))}
-.ink{color:#121110}
-.echo{position:absolute;left:0;right:0;text-align:center;font:178px IB;letter-spacing:3px;white-space:nowrap;color:transparent;-webkit-text-stroke:3px rgba(255,207,90,.55)}
+  filter:drop-shadow(0 2px 0 #222) drop-shadow(0 4px 0 #161616) drop-shadow(0 8px 0 #0e0e0e) drop-shadow(0 22px 30px rgba(0,0,0,.8)) drop-shadow(0 0 30px rgba(255,92,54,.3))}
+.ink{color:#050506}
+.echo{position:absolute;left:0;right:0;text-align:center;font:178px IB;letter-spacing:3px;white-space:nowrap;color:transparent;-webkit-text-stroke:3px rgba(255,92,54,.55)}
 .paper{position:absolute;inset:0;background:var(--paper)}
 #dust,#fx,#grain{position:absolute;inset:0;pointer-events:none}
 #grain{opacity:.16;mix-blend-mode:overlay;image-rendering:pixelated}
 #vig{position:absolute;inset:0;background:radial-gradient(ellipse 75% 60% at 50% 48%,transparent 55%,rgba(0,0,0,.75) 100%);pointer-events:none}
-#hud{position:absolute;inset:0;pointer-events:none;font:22px MO;letter-spacing:3px;color:rgba(234,220,189,.55)}
-.c{position:absolute;width:40px;height:40px;border-color:rgba(234,220,189,.5);border-style:solid}
+#hud{position:absolute;inset:0;pointer-events:none;font:22px MO;letter-spacing:3px;color:rgba(217,214,207,.55)}
+.c{position:absolute;width:40px;height:40px;border-color:rgba(217,214,207,.5);border-style:solid}
 .node{width:190px;display:flex;flex-direction:column;align-items:center;gap:18px}
-.nbox{width:120px;height:120px;border-radius:22px;border:3px solid rgba(255,207,90,.35);display:flex;align-items:center;justify-content:center;font:46px IB;color:rgba(255,207,90,.5);background:rgba(255,207,90,.03)}
-.nlab{font:30px IBD;color:rgba(234,220,189,.55);text-align:center;white-space:nowrap}
-.pbox{width:880px;border-radius:26px;border:2px solid rgba(255,207,90,.6);background:rgba(20,16,10,.9);padding:34px 38px;box-sizing:border-box;box-shadow:0 0 50px rgba(255,190,70,.2)}
-.pill{display:inline-block;background:var(--gold);color:#1a1205;font:24px IBD;padding:8px 18px;border-radius:30px;margin-bottom:22px}
-.ptxt{font:40px IM;color:#f3ead6;min-height:150px;line-height:1.3}
-.ptxt u{text-decoration:none;background:rgba(255,207,90,.25);color:#ffe7a6}
-.btn{margin-top:22px;float:right;background:var(--gold);color:#1a1205;font:30px IBD;padding:18px 34px;border-radius:16px}
+.nbox{width:120px;height:120px;border-radius:22px;border:3px solid rgba(255,92,54,.35);display:flex;align-items:center;justify-content:center;font:46px IB;color:rgba(255,92,54,.55);background:rgba(255,92,54,.04)}
+.nlab{font:30px IBD;color:rgba(217,214,207,.55);text-align:center;white-space:nowrap}
+.pbox{width:880px;border-radius:26px;border:2px solid rgba(255,92,54,.6);background:rgba(14,14,16,.92);padding:34px 38px;box-sizing:border-box;box-shadow:0 0 50px rgba(255,92,54,.22)}
+.pill{display:inline-block;background:var(--gold);color:#fff;font:24px IBD;padding:8px 18px;border-radius:30px;margin-bottom:22px}
+.ptxt{font:40px IM;color:#ecebe7;min-height:150px;line-height:1.3}
+.ptxt u{text-decoration:none;background:rgba(255,92,54,.25);color:#ffd2c4}
+.btn{margin-top:22px;float:right;background:var(--gold);color:#fff;font:30px IBD;padding:18px 34px;border-radius:16px}
 #hook{position:absolute;inset:0;z-index:20;display:none;background:#000}
 #hook video{width:1080px;height:1920px;object-fit:cover;display:block}
 #hooktxt{position:absolute;left:50px;right:50px;top:300px;text-align:center;font:96px IB;letter-spacing:-2px;line-height:1.02;color:#fff;-webkit-text-stroke:10px #000;paint-order:stroke fill}
 #hooktxt em{font-style:normal;color:var(--gold)}
-#sub{position:absolute;left:80px;right:80px;top:1400px;text-align:center;font:50px LO;color:rgba(234,220,189,.8);line-height:1.2}
-#sub b{font-weight:normal;color:#fff3cf}
+#sub{position:absolute;left:80px;right:80px;top:1400px;text-align:center;font:50px LO;color:rgba(217,214,207,.85);line-height:1.2}
+#sub b{font-weight:normal;color:#ffffff}
 #prog{position:absolute;left:0;top:0;height:8px;background:var(--gold);box-shadow:0 0 14px var(--gold);z-index:21}
 </style></head><body>
 <div id="cam"><canvas id="dust" width="1080" height="1920"></canvas><div id="beats"></div><canvas id="fx" width="1080" height="1920"></canvas></div>
@@ -84,7 +84,7 @@ async function init() {
     if (st === 'diagram') {
       h += `<div class="center">${b.small ? `<div class="small" data-small>${esc(b.small)}</div>` : ''}<div style="position:relative;display:flex;gap:30px;margin-top:40px" data-row>` +
         b.items.map((it, k) => `<div class="node" data-node="${k}"><div class="nbox">${esc(it.icon || (k + 1))}</div><div class="nlab">${esc(it.label)}</div></div>`).join('') +
-        `<svg data-line style="position:absolute;left:0;top:0;overflow:visible;pointer-events:none" width="10" height="10"><path fill="none" stroke="#ffcf5a" stroke-width="5" stroke-linecap="round" style="filter:drop-shadow(0 0 10px #ffb84a)"/></svg></div></div>`;
+        `<svg data-line style="position:absolute;left:0;top:0;overflow:visible;pointer-events:none" width="10" height="10"><path fill="none" stroke="#ff5c36" stroke-width="5" stroke-linecap="round" style="filter:drop-shadow(0 0 10px #ff5c36)"/></svg></div></div>`;
     } else if (st === 'prompt') {
       h += `<div class="center">${b.small ? `<div class="small" data-small>${esc(b.small)}</div>` : ''}<div class="pbox"><div class="pill">✦ ${esc(b.tool || 'Klaviyo AI')}</div><div class="ptxt" data-ptxt></div><div class="btn" data-btn>${esc(b.button || 'Genereer →')}</div><div style="clear:both"></div></div></div>`;
     } else {
@@ -128,14 +128,14 @@ async function init() {
 const dust = Array.from({ length: 140 }, (_, i) => ({ x: rnd(i) * 1080, y: rnd(i + 99) * 1920, s: 1 + rnd(i + 7) * 3, v: 6 + rnd(i + 3) * 18, p: rnd(i + 5) * 6.28 }));
 function drawDust(t) { const c = document.getElementById('dust').getContext('2d'); c.clearRect(0, 0, 1080, 1920);
   for (const d of dust) { const y = (d.y - t * d.v + 1920 * 4) % 1920, x = d.x + Math.sin(t * .4 + d.p) * 30, a = .25 + .35 * Math.sin(t * 1.3 + d.p) ** 2;
-    c.fillStyle = `rgba(255,205,120,${a})`; c.beginPath(); c.arc(x, y, d.s, 0, 6.28); c.fill() } }
+    c.fillStyle = `rgba(255,${150 + 60 * Math.sin(d.p) | 0},${120 + 60 * Math.sin(d.p) | 0},${a})`; c.beginPath(); c.arc(x, y, d.s, 0, 6.28); c.fill() } }
 function drawGrain(t) { const c = document.getElementById('grain').getContext('2d'), im = c.createImageData(270, 480), f = Math.floor(t * 24);
   for (let i = 0; i < im.data.length; i += 4) { const v = rnd(i * .37 + f * 13.1) * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255 } c.putImageData(im, 0, 0) }
 function sparks(c, x0, y0, t, seed) { // burst of sparks at (x0,y0), t seconds after start
   if (t < 0 || t > 1.2) return;
   for (let k = 0; k < 46; k++) { const a = rnd(seed + k) * 6.28, v = 300 + rnd(seed + k * 3) * 900, life = .5 + rnd(seed + k * 7) * .7; if (t > life) continue;
     const x = x0 + Math.cos(a) * v * t, y = y0 + Math.sin(a) * v * t + 500 * t * t, al = 1 - t / life;
-    c.strokeStyle = `rgba(255,${200 + 55 * al | 0},120,${al})`; c.lineWidth = 3; c.beginPath(); c.moveTo(x, y); c.lineTo(x - Math.cos(a) * 26 * al, y - (Math.sin(a) * 26 - 30 * t) * al); c.stroke() } }
+    c.strokeStyle = `rgba(255,${120 + 120 * al | 0},${90 + 120 * al | 0},${al})`; c.lineWidth = 3; c.beginPath(); c.moveTo(x, y); c.lineTo(x - Math.cos(a) * 26 * al, y - (Math.sin(a) * 26 - 30 * t) * al); c.stroke() } }
 
 window.renderAt = t => {
   document.getElementById('prog').style.width = cl(t / DUR) * 1080 + 'px';
@@ -161,24 +161,24 @@ window.renderAt = t => {
     x.echos.forEach(e => { const k = +e.dataset.echo, q = eOut((t - x.tBig[0] - .08) / .6), f = +e.dataset.fit;
       e.style.transform = `translateY(${k * 128 * q}px) scale(${f})`; e.style.opacity = q * (1 - Math.abs(k) * .26) });
     if (x.st === 'streak') { const q = eIO(a / .7), y = 960, hx = lerp(-80, 1160, q);
-      const g = fx.createLinearGradient(hx - 700, 0, hx, 0); g.addColorStop(0, 'rgba(255,190,80,0)'); g.addColorStop(1, 'rgba(255,230,170,.95)');
+      const g = fx.createLinearGradient(hx - 700, 0, hx, 0); g.addColorStop(0, 'rgba(255,92,54,0)'); g.addColorStop(1, 'rgba(255,220,205,.95)');
       if (a < 1.1) { fx.strokeStyle = g; fx.lineWidth = 4; fx.beginPath(); fx.moveTo(Math.max(0, hx - 700), y + 110); fx.lineTo(hx, y + 110); fx.stroke();
-        const rg = fx.createRadialGradient(hx, y + 110, 0, hx, y + 110, 120); rg.addColorStop(0, 'rgba(255,245,210,.95)'); rg.addColorStop(1, 'rgba(255,180,60,0)'); fx.fillStyle = rg; fx.fillRect(hx - 130, y - 20, 260, 260) }
+        const rg = fx.createRadialGradient(hx, y + 110, 0, hx, y + 110, 120); rg.addColorStop(0, 'rgba(255,240,232,.95)'); rg.addColorStop(1, 'rgba(255,92,54,0)'); fx.fillStyle = rg; fx.fillRect(hx - 130, y - 20, 260, 260) }
       sparks(fx, 1000, y + 110, a - .7, x.i * 50) }
     if (x.st === 'title' || x.st === 'word' || x.st === 'number') x.tBig.forEach((tb, k) => { if (k === x.tBig.length - 1) { const r = x.bigs[k].getBoundingClientRect(); sparks(fx, r.right - 10, r.top + r.height * .3, t - tb - .1, x.i * 70 + k) } });
     if (x.st === 'diagram') { let lit = 0;
       x.nodes.forEach((n, k) => { const q = eOut((t - x.tNode[k]) / .35), bx = n.querySelector('.nbox'), lb = n.querySelector('.nlab');
         n.style.opacity = .35 + .65 * cl((t - x.t0) / .3); if (q > 0) lit = k;
-        bx.style.borderColor = `rgba(255,207,90,${.35 + .65 * q})`; bx.style.color = `rgba(255,${207 + 30 * q | 0},${90 + 120 * q | 0},${.5 + .5 * q})`;
-        bx.style.background = `rgba(255,207,90,${.03 + .2 * q})`; bx.style.boxShadow = `0 0 ${50 * q}px rgba(255,190,70,${.6 * q})`; lb.style.color = `rgba(255,235,200,${.55 + .45 * q})`;
+        bx.style.borderColor = `rgba(255,92,54,${.35 + .65 * q})`; bx.style.color = `rgba(255,${92 + 163 * q | 0},${54 + 201 * q | 0},${.55 + .45 * q})`;
+        bx.style.background = `rgba(255,92,54,${.04 + .55 * q})`; bx.style.boxShadow = `0 0 ${50 * q}px rgba(255,92,54,${.6 * q})`; lb.style.color = `rgba(255,255,255,${.55 + .45 * q})`;
         bx.style.transform = `scale(${1 + .15 * (1 - cl((t - x.tNode[k]) / .3)) * (q > 0 ? 1 : 0)})` });
       // line grows to the latest lit node
       const k1 = x.tNode.findIndex(tn => t < tn), seg = x.pts.length - 1; let frac;
       if (k1 === -1) frac = 1; else if (k1 === 0) frac = 0; else { const p0 = x.tNode[k1 - 1], p1 = x.tNode[k1]; frac = ((k1 - 1) + eIO((t - p0) / (p1 - p0))) / seg }
       x.path.style.strokeDasharray = x.plen; x.path.style.strokeDashoffset = x.plen * (1 - frac) }
-    if (x.st === 'prompt') { const txt = x.b.prompt || '', n = Math.round(txt.length * cl((t - x.pt0) / (x.pt1 - x.pt0))), car = (Math.floor(t * 2.2) % 2 || n < txt.length) ? '<span style="color:#ffcf5a">▍</span>' : '';
+    if (x.st === 'prompt') { const txt = x.b.prompt || '', n = Math.round(txt.length * cl((t - x.pt0) / (x.pt1 - x.pt0))), car = (Math.floor(t * 2.2) % 2 || n < txt.length) ? '<span style="color:#ff5c36">▍</span>' : '';
       const hl = (x.b.highlight || []).reduce((s, w) => s.replace(esc(w), `<u>${esc(w)}</u>`), esc(txt.slice(0, n))); x.ptxt.innerHTML = hl + car;
-      const q = t - x.tBtn; x.btn.style.boxShadow = q > 0 ? `0 0 ${60 * (1 - cl(q / .8))}px #ffcf5a` : 'none'; x.btn.style.transform = `scale(${q > 0 && q < .15 ? .92 : 1})` }
+      const q = t - x.tBtn; x.btn.style.boxShadow = q > 0 ? `0 0 ${60 * (1 - cl(q / .8))}px #ff5c36` : 'none'; x.btn.style.transform = `scale(${q > 0 && q < .15 ? .92 : 1})` }
   });
   // subtitle: current spoken words, so the screen is never empty
   let sub = '';
