@@ -10,7 +10,7 @@ reel.json:
 Each scene's line starts when the scene starts. If a line is longer than its scene,
 the scene is rendered longer (it holds on its last frame) so voice and visuals stay together.
 """
-import glob, hashlib, json, os, re, subprocess, sys, urllib.request
+import glob, hashlib, json, os, re, subprocess, sys, urllib.error, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +24,20 @@ env = dict(os.environ, FPS=os.environ.get("FPS", "30"), CRF=os.environ.get("CRF"
 scenes = cfg.get("scenes", [])
 SARAH = "EXAVITQu4vr4xnSDxMaL"
 LIAM = "TX3LPaxmHKxFdv7VOQHJ"
+
+
+CACHE = os.path.join(ROOT, ".cache"); os.makedirs(CACHE, exist_ok=True)
+
+
+def api(req, timeout=240):
+    """Call ElevenLabs and show the real reason on errors (quota, bad key...)."""
+    try:
+        return urllib.request.urlopen(req, timeout=timeout)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode(errors="replace")[:500]
+        if "quota" in body.lower() or "credits" in body.lower():
+            sys.exit(f"ELEVENLABS OUT OF CREDITS: {body}")
+        sys.exit(f"ElevenLabs error {e.code}: {body}")
 
 
 def run(cmd, **kw):
@@ -53,7 +67,7 @@ def tts(text, path, prev_text=None, next_text=None):
     req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{vid}?output_format=mp3_44100_128",
                                  data=json.dumps(body).encode(),
                                  headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=180) as r, open(path, "wb") as f:
+    with api(req, 180) as r, open(path, "wb") as f:
         f.write(r.read())
 
 
@@ -67,14 +81,14 @@ DEFAULT_SFX = {
     "shimmer": "fast bright cinematic light sweep whoosh with sparkle shimmer",
 }
 def sfx_file(prompt, secs):
-    p = os.path.join(work, "sfx_" + hashlib.md5(prompt.encode()).hexdigest()[:10] + ".mp3")
+    p = os.path.join(CACHE, "sfx_" + hashlib.md5(f"{prompt}|{secs}".encode()).hexdigest()[:12] + ".mp3")
     if os.path.exists(p): return p
     if os.environ.get("FAKE_TTS"):
         run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", f"anoisesrc=d={secs}:a=0.3", p]); return p
     req = urllib.request.Request("https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128",
                                  data=json.dumps({"text": prompt, "duration_seconds": secs, "prompt_influence": 0.6}).encode(),
                                  headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=180) as r, open(p, "wb") as f:
+    with api(req, 180) as r, open(p, "wb") as f:
         f.write(r.read())
     return p
 
@@ -128,8 +142,12 @@ def pick_hook():
 def tts_ts(text, prev_t=None, next_t=None):
     """TTS with character timings. Returns (mp3 path, starts, ends)."""
     import base64
-    p = os.path.join(work, "line_" + hashlib.md5(text.encode()).hexdigest()[:10] + ".mp3")
+    key = hashlib.md5(json.dumps([text, cfg.get("voice_id", LIAM), cfg.get("model_id"), cfg.get("voice_settings"), prev_t, next_t]).encode()).hexdigest()[:14]
+    p = os.path.join(CACHE, f"line_{key}.mp3"); pj = p[:-4] + ".json"
+    if os.path.exists(p) and os.path.exists(pj) and not os.environ.get("FAKE_TTS"):
+        al = json.load(open(pj)); return p, al["s"], al["e"]
     if os.environ.get("FAKE_TTS"):
+        p = os.path.join(work, f"line_{key}.mp3")
         cs = [i / 13 for i in range(len(text))]; ce = [c + 1 / 13 for c in cs]
         run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", f"sine=f=200:d={len(text)/13:.2f}", p]); return p, cs, ce
     body = {"text": text, "model_id": cfg.get("model_id", "eleven_multilingual_v2"),
@@ -139,10 +157,11 @@ def tts_ts(text, prev_t=None, next_t=None):
     if cfg.get("language_code"): body["language_code"] = cfg["language_code"]
     req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{cfg.get('voice_id', LIAM)}/with-timestamps?output_format=mp3_44100_128",
                                  data=json.dumps(body).encode(), headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=240) as r:
+    with api(req) as r:
         res = json.loads(r.read())
     open(p, "wb").write(base64.b64decode(res["audio_base64"]))
     al = res["alignment"]
+    json.dump({"s": al["character_start_times_seconds"], "e": al["character_end_times_seconds"]}, open(pj, "w"))
     return p, al["character_start_times_seconds"], al["character_end_times_seconds"]
 
 
@@ -219,8 +238,14 @@ def explainer():
         req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{cfg.get('voice_id', SARAH)}/with-timestamps?output_format=mp3_44100_128",
                                      data=json.dumps(body).encode(),
                                      headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=240) as r:
-            res = json.loads(r.read())
+        key = hashlib.md5(json.dumps([full, cfg.get("voice_id", SARAH), cfg.get("model_id"), cfg.get("voice_settings")]).encode()).hexdigest()[:14]
+        cj = os.path.join(CACHE, f"voice_{key}.json")
+        if os.path.exists(cj):
+            res = json.load(open(cj))
+        else:
+            with api(req) as r:
+                res = json.loads(r.read())
+            json.dump(res, open(cj, "w"))
         open(voice, "wb").write(base64.b64decode(res["audio_base64"]))
         al = res.get("normalized_alignment") or res["alignment"]
         if "".join(al["characters"]) != full: al = res["alignment"]

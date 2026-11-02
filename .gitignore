@@ -8,3 +8,4 @@ q_*.png
 node_modules
 build/
 out/
+.cache/
