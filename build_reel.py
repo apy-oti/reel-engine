@@ -23,6 +23,7 @@ os.makedirs(work, exist_ok=True); os.makedirs(out_dir, exist_ok=True)
 env = dict(os.environ, FPS=os.environ.get("FPS", "30"), CRF=os.environ.get("CRF", "21"))
 scenes = cfg.get("scenes", [])
 SARAH = "EXAVITQu4vr4xnSDxMaL"
+LIAM = "TX3LPaxmHKxFdv7VOQHJ"
 
 
 def run(cmd, **kw):
@@ -63,6 +64,7 @@ DEFAULT_SFX = {
     "tick": "single soft elegant UI tick, crisp and minimal, premium interface sound",
     "click": "satisfying soft glassy digital click pop, premium app UI sound",
     "thud": "soft deep sub thump, elegant and short, no reverb",
+    "shimmer": "fast bright cinematic light sweep whoosh with sparkle shimmer",
 }
 def sfx_file(prompt, secs):
     p = os.path.join(work, "sfx_" + hashlib.md5(prompt.encode()).hexdigest()[:10] + ".mp3")
@@ -83,8 +85,10 @@ def hit_events(hp, offset):
     for ht, decay in sorted((float(a), b) for a, b in json.load(open(hp)).items()):
         if ht - last < 0.08: continue
         last = ht
-        kind = "tick" if decay >= 18 else "click" if decay >= 12 else "thud"
-        out.append((offset + ht, sfx_file(DEFAULT_SFX[kind], 0.5 if kind != "thud" else 0.8), cfg.get("hit_volume", 0.35)))
+        kind = ("shimmer" if decay >= 25 else "tick" if decay >= 18 else "click" if decay >= 12 else "thud" if decay > 5 else "hit")
+        secs = {"shimmer": 1.2, "hit": 1.5, "thud": 0.8}.get(kind, 0.5)
+        vol = cfg.get("hit_volume", 0.35) * (1.25 if kind == "hit" else 1)
+        out.append((offset + ht, sfx_file(DEFAULT_SFX[kind], secs), vol))
     return out
 
 
@@ -109,6 +113,82 @@ def pick_hook():
     used[rid] = os.path.basename(c)
     json.dump(used, open(up, "w"), indent=1)
     return c
+
+
+def tts_ts(text, prev_t=None, next_t=None):
+    """TTS with character timings. Returns (mp3 path, starts, ends)."""
+    import base64
+    p = os.path.join(work, "line_" + hashlib.md5(text.encode()).hexdigest()[:10] + ".mp3")
+    if os.environ.get("FAKE_TTS"):
+        cs = [i / 13 for i in range(len(text))]; ce = [c + 1 / 13 for c in cs]
+        run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", f"sine=f=200:d={len(text)/13:.2f}", p]); return p, cs, ce
+    body = {"text": text, "model_id": cfg.get("model_id", "eleven_multilingual_v2"),
+            "voice_settings": cfg.get("voice_settings", {"stability": 0.32, "similarity_boost": 0.8, "style": 0.6, "use_speaker_boost": True})}
+    if prev_t: body["previous_text"] = prev_t
+    if next_t: body["next_text"] = next_t
+    if cfg.get("language_code"): body["language_code"] = cfg["language_code"]
+    req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{cfg.get('voice_id', LIAM)}/with-timestamps?output_format=mp3_44100_128",
+                                 data=json.dumps(body).encode(), headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=240) as r:
+        res = json.loads(r.read())
+    open(p, "wb").write(base64.b64decode(res["audio_base64"]))
+    al = res["alignment"]
+    return p, al["character_start_times_seconds"], al["character_end_times_seconds"]
+
+
+def cinematic():
+    """Cinematic kinetic type: short excited lines, key words slam in as they are spoken, music in the gaps."""
+    beats = cfg["beats"]
+    texts = [b["say"].strip() for b in beats]
+    hook = pick_hook()
+    H = 0.0
+    if hook:
+        H = round(min(duration(hook), float(cfg.get("hook_max", 4.5))), 3)
+    t = H + 0.15
+    words, bt, ev = [], [], []
+    for i, tx in enumerate(texts):
+        p, cs, ce = tts_ts(tx, " ".join(texts[:i])[-300:] or None, " ".join(texts[i + 1:])[:300] or None)
+        lead = float(beats[i].get("lead", 0.12))
+        start = t
+        ev.append((start + lead, p, 1.0))
+        j = 0
+        while j < len(tx):
+            if tx[j] == " ": j += 1; continue
+            k = j
+            while k < len(tx) and tx[k] != " ": k += 1
+            words.append({"w": tx[j:k], "s": round(start + lead + cs[min(j, len(cs)-1)], 3), "e": round(start + lead + ce[min(k-1, len(ce)-1)], 3), "beat": i})
+            j = k
+        t = start + lead + duration(p) + float(beats[i].get("gap", cfg.get("gap", 0.55)))
+        bt.append({"start": round(start, 3), "end": round(t, 3)})
+    cta = cfg.get("cta")
+    end_start = round(t, 3)
+    total = round(end_start + float(cta.get("seconds", 2.8)) if cta else t + 0.3, 3)
+    tm = {"words": words, "beats": bt, "end_start": end_start, "duration": total}
+    if hook:
+        tm["hook"] = {"src": "/" + os.path.relpath(hook, ROOT), "dur": H, "text": cfg.get("hook_text", texts[0]).rstrip(".")}
+        print("hook:", os.path.basename(hook), H, flush=True)
+    tpath = os.path.join(work, "timing.json"); json.dump(tm, open(tpath, "w"))
+    rel_t = os.path.relpath(tpath, ROOT)
+    jobs = int(os.environ.get("JOBS", "2")); n = max(1, min(jobs, int(total // 6) or 1)); seg = total / n
+    def rpart(k):
+        out = os.path.join(work, f"part{k:02d}.mp4")
+        run(["python3", os.path.join(ROOT, "render.py"), f"cinematic.html?reel={folder}&timing={rel_t}", out, "video", f"{seg:.3f}"],
+            env=dict(env, PORT=str(8870 + k), START=f"{k*seg:.4f}", HITS_ALL="1"))
+        return out
+    with ThreadPoolExecutor(max_workers=jobs) as ex:
+        parts = list(ex.map(rpart, range(n)))
+    lst = os.path.join(work, "list.txt"); open(lst, "w").write("".join(f"file '{p}'\n" for p in parts))
+    silent = os.path.join(work, "video.mp4")
+    run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", silent])
+    if hook:
+        ha = hook[:-5] + ".mp3"
+        if os.path.exists(ha): ev.append((0.0, ha, cfg.get("hook_volume", 0.55)))
+    if cfg.get("sfx", True):
+        sv = cfg.get("sfx_volume", 0.4)
+        cuts = [b["start"] for b in bt[1:]] + ([end_start] if cta else []) + ([H] if hook else [])
+        for c in cuts: ev.append((max(c - 0.2, 0), sfx_file(DEFAULT_SFX["cut"], 1.0), sv))
+        ev += hit_events(os.path.join(work, "part00.hits.json"), 0.0)
+    return silent, duration(silent), ev
 
 
 def explainer():
@@ -259,6 +339,8 @@ def scene_reel():
 
 if cfg.get("type") == "explainer":
     silent, vlen, events = explainer()
+elif cfg.get("type") == "cinematic":
+    silent, vlen, events = cinematic()
 else:
     silent, vlen, events = scene_reel()
 

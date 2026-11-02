@@ -42,3 +42,10 @@ See reels/2026-11-explainer-3-flows/reel.json.
 Every explainer starts with a random hook clip from `hooks/` (never repeats until all were used; tracked in hooks/used.json).
 Add hooks: `python3 tools/add_hooks.py clip1.mp4 compilation.mp4` (long videos are split at scene changes), then commit.
 Per reel: "hook_text" (big line on the hook), "hook": false (no hook) or "hook": "tree-smash" (force one).
+
+## Cinematic reels (gold kinetic type)
+`"type": "cinematic"`. Short excited lines (one TTS call per beat, with pauses), key words slam in when spoken.
+Beat styles: title (small serif + big gold), flash (paper screen, black type), echo (stacked outlines), streak (light sweep + sparks),
+chrome (3D metal), diagram (items lit by a gold line), prompt (typing box + button), number.
+Fields: say, style, small, big (lines split by |), items [{icon,label}], prompt, highlight, tool, button, hud, gap.
+Default voice Liam (energetic male). See reels/2026-11-cinematic-3-flows/reel.json.

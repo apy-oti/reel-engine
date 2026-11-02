@@ -1,0 +1,21 @@
+{
+  "type": "cinematic",
+  "title": "Cinematic: 3 flows",
+  "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+  "music": "music/promo-funk.mp3",
+  "music_volume": 0.16,
+  "hook_text": "Je webshop verliest elke dag geld",
+  "cta": {"kicker": "Reageer met", "word": "AUDIT", "sub": "en ik check gratis jouw inbox", "seconds": 3},
+  "beats": [
+    {"say": "Wat als ik je vertel dat je webshop elke dag geld laat liggen?", "style": "title", "small": "Wat als ik je vertel dat", "big": "JE WEBSHOP|GELD LAAT LIGGEN", "hud": "PROBLEEM"},
+    {"say": "Elke. Dag.", "style": "flash", "big": "ELKE DAG.", "gap": 0.35},
+    {"say": "Ik schreef me in bij vijf webshops. Drie stuurden niets.", "style": "title", "small": "Ik schreef me in bij vijf webshops", "big": "DRIE|STUURDEN NIETS", "hud": "TEST / 5 SHOPS"},
+    {"say": "Geen welkom. Geen opvolging. Niets.", "style": "echo", "big": "NIETS.", "gap": 0.4},
+    {"say": "Dit is wat je mist.", "style": "streak", "big": "DIT IS WAT JE MIST"},
+    {"say": "Een welkomstreeks. Een verlaten winkelmand. En een win-back.", "style": "diagram", "small": "Drie flows die verkopen", "hud": "KLAVIYO / FLOWS",
+     "items": [{"icon": "01", "label": "Welkom"}, {"icon": "02", "label": "Winkelmand"}, {"icon": "03", "label": "Win-back"}]},
+    {"say": "Je zet het één keer op.", "style": "prompt", "tool": "Klaviyo", "prompt": "Bouw een welkomstreeks voor mijn koffiewebshop met 10% korting", "highlight": ["welkomstreeks", "10% korting"], "button": "Activeer flow →"},
+    {"say": "En het verkoopt terwijl jij slaapt.", "style": "chrome", "big": "TERWIJL|JIJ SLAAPT."},
+    {"say": "Own The Inbox.", "style": "title", "big": "OWN THE INBOX", "gap": 0.4}
+  ]
+}
