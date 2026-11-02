@@ -33,7 +33,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--b
 .ptxt u{text-decoration:none;background:rgba(255,92,54,.25);color:#ffd2c4}
 .btn{margin-top:22px;float:right;background:var(--gold);color:#fff;font:30px IBD;padding:18px 34px;border-radius:16px}
 #hook{position:absolute;inset:0;z-index:20;display:none;background:#000}
-#hook video{width:1080px;height:1920px;object-fit:cover;display:block}
+#hook img{width:1080px;height:1920px;object-fit:cover;display:block}
 #hooktxt{position:absolute;left:50px;right:50px;top:300px;text-align:center;font:96px IB;letter-spacing:-2px;line-height:1.02;color:#fff;-webkit-text-stroke:10px #000;paint-order:stroke fill}
 #hooktxt em{font-style:normal;color:var(--gold)}
 #sub{position:absolute;left:80px;right:80px;top:1400px;text-align:center;font:50px LO;color:rgba(217,214,207,.85);line-height:1.2}
@@ -46,7 +46,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--b
 <div class="c" style="left:60px;bottom:150px;border-width:0 0 3px 3px"></div><div class="c" style="right:60px;bottom:150px;border-width:0 3px 3px 0"></div>
 <div style="position:absolute;left:70px;top:210px"><span style="color:var(--gold)">●</span> OWN THE INBOX</div><div id="tc" style="position:absolute;right:70px;top:210px">00:00:00</div>
 <div id="sc" style="position:absolute;left:70px;bottom:205px">SCENE 01</div><div id="lb" style="position:absolute;right:70px;bottom:205px">KLAVIYO / E-MAIL</div></div>
-<div id="sub"></div><div id="hook"><video id="hookv" muted playsinline preload="auto"></video><div id="hooktxt"></div></div><div id="prog"></div>
+<div id="sub"></div><div id="hook"><img id="hookv" style="width:1080px;height:1920px;object-fit:cover;display:block"><div id="hooktxt"></div></div><div id="prog"></div>
 <script>
 const Q = new URLSearchParams(location.search), REEL = Q.get('reel'), TIMING = Q.get('timing');
 const cl = x => Math.max(0, Math.min(1, x)), lerp = (a, b, t) => a + (b - a) * t;
@@ -71,8 +71,7 @@ async function init() {
   const cfg = await (await fetch('/' + REEL + '/reel.json')).json();
   const tm = await (await fetch('/' + TIMING)).json();
   WORDS = tm.words; DUR = tm.duration; HOOK = tm.hook || null;
-  if (HOOK) { const v = document.getElementById('hookv'); v.src = HOOK.src;
-    await new Promise((res, rej) => { v.onloadeddata = res; v.onerror = () => rej(new Error('hook video failed')); v.load() });
+  if (HOOK) { const v = document.getElementById('hookv'); v.src = HOOK.frames + '0001.jpg'; await v.decode();
     const ws = (HOOK.text || '').split(' '); document.getElementById('hooktxt').innerHTML = ws.map((w, i) => i === ws.length - 1 ? `<em>${esc(w)}</em>` : esc(w)).join(' ') }
   const host = document.getElementById('beats');
   cfg.beats.forEach((b, i) => {
@@ -197,8 +196,8 @@ window.renderAt = t => {
   // hook clip
   const hk = document.getElementById('hook');
   if (HOOK && t < HOOK.dur) { hk.style.display = 'block'; const ht = document.getElementById('hooktxt'); ht.style.transform = `scale(${.7 + .3 * back(t / .25)})`;
-    const v = document.getElementById('hookv'), want = Math.min(t, v.duration - .02); if (Math.abs(v.currentTime - want) < .001) return;
-    return new Promise(res => { v.addEventListener('seeked', () => requestAnimationFrame(() => res()), { once: true }); v.currentTime = want }) }
+    const v = document.getElementById('hookv'), idx = Math.min(HOOK.count, Math.floor(t * HOOK.fps) + 1), src = HOOK.frames + String(idx).padStart(4, '0') + '.jpg';
+    if (v.dataset.idx == idx) return; v.dataset.idx = idx; v.src = src; return v.decode().catch(() => {}) }
   hk.style.display = 'none';
 };
 init().catch(e => { console.error(e); document.body.innerHTML = '<pre style="color:red;font-size:30px">' + e + '</pre>' });

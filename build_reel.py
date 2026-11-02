@@ -92,6 +92,16 @@ def hit_events(hp, offset):
     return out
 
 
+def hook_frames(hook, dur):
+    """Cut the hook clip into JPG frames (headless Chromium can't reliably play video)."""
+    d = os.path.join(work, "hook"); os.makedirs(d, exist_ok=True)
+    fps = int(env["FPS"])
+    run(["ffmpeg", "-nostdin", "-y", "-loglevel", "error", "-i", hook, "-t", f"{dur:.3f}", "-vf", f"fps={fps},scale=1080:1920",
+         "-q:v", "3", os.path.join(d, "%04d.jpg")])
+    n = len(glob.glob(os.path.join(d, "*.jpg")))
+    return {"frames": "/" + os.path.relpath(d, ROOT) + "/", "fps": fps, "count": n}
+
+
 def pick_hook():
     """Random hook from hooks/, never repeating until every hook was used once. Set "hook": false to skip,
     or "hook": "name" to force one."""
@@ -165,7 +175,7 @@ def cinematic():
     total = round(end_start + float(cta.get("seconds", 2.8)) if cta else t + 0.3, 3)
     tm = {"words": words, "beats": bt, "end_start": end_start, "duration": total}
     if hook:
-        tm["hook"] = {"src": "/" + os.path.relpath(hook, ROOT), "dur": H, "text": cfg.get("hook_text", texts[0]).rstrip(".")}
+        tm["hook"] = {"dur": H, "text": cfg.get("hook_text", texts[0]).rstrip("."), **hook_frames(hook, H)}
         print("hook:", os.path.basename(hook), H, flush=True)
     tpath = os.path.join(work, "timing.json"); json.dump(tm, open(tpath, "w"))
     rel_t = os.path.relpath(tpath, ROOT)
@@ -236,8 +246,8 @@ def explainer():
     hook = pick_hook()
     if hook:
         first = re.split(r"(?<=[.!?])\s", texts[0])[0]
-        tm["hook"] = {"src": "/" + os.path.relpath(hook, ROOT), "dur": round(min(duration(hook), float(cfg.get("hook_max", 4.5))), 3),
-                      "text": cfg.get("hook_text", first).rstrip(".")}
+        hd = round(min(duration(hook), float(cfg.get("hook_max", 4.5))), 3)
+        tm["hook"] = {"dur": hd, "text": cfg.get("hook_text", first).rstrip("."), **hook_frames(hook, hd)}
         print("hook:", os.path.basename(hook), tm["hook"]["dur"], flush=True)
     tpath = os.path.join(work, "timing.json"); json.dump(tm, open(tpath, "w"))
     rel_t = os.path.relpath(tpath, ROOT)

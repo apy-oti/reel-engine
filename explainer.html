@@ -29,7 +29,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--b
 #punch{position:absolute;left:0;right:0;top:820px;text-align:center;font:300px IB;letter-spacing:-10px;color:var(--coral);display:none;z-index:7;text-shadow:0 20px 60px rgba(0,0,0,.7),0 0 60px rgba(255,92,54,.5);-webkit-text-stroke:6px #000;paint-order:stroke fill}
 #all{position:absolute;inset:0}
 #hook{position:absolute;inset:0;z-index:3;display:none;background:#000}
-#hook video{width:1080px;height:1920px;object-fit:cover;display:block}
+#hook img{width:1080px;height:1920px;object-fit:cover;display:block}
 #hooktxt{position:absolute;left:50px;right:50px;top:300px;text-align:center;font:96px IB;letter-spacing:-3px;line-height:1.02;color:#fff;
   -webkit-text-stroke:10px #000;paint-order:stroke fill;text-shadow:0 10px 40px rgba(0,0,0,.6)}
 #hooktxt em{font-style:normal;color:var(--coral)}
@@ -71,7 +71,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--b
 </style></head><body>
 <div id="all"><div id="stage"><div id="grid"></div><div class="blob" id="b1" style="width:700px;height:700px;background:#ff5c36"></div><div class="blob" id="b2" style="width:600px;height:600px;background:#6c47ff"></div><div id="bgglow"></div></div>
 <div id="cap"></div><div id="brand">@OWNTHEINBOX</div><div id="emo"></div><div id="punch"></div></div>
-<div id="hook"><video id="hookv" muted playsinline preload="auto"></video><div id="hooktxt"></div></div>
+<div id="hook"><img id="hookv" style="width:1080px;height:1920px;object-fit:cover;display:block"><div id="hooktxt"></div></div>
 <div id="progbg"></div><div id="prog"></div>
 <svg id="cursor" viewBox="0 0 24 24"><path d="M4 2l16 10-7 1.5L9.5 21z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
 <div id="ring"></div>
@@ -102,8 +102,7 @@ async function init() {
   const cfg = await (await fetch('/' + REEL + '/reel.json')).json();
   const tm = await (await fetch('/' + TIMING)).json();
   WORDS = tm.words; DUR = tm.duration; HOOK = tm.hook || null;
-  if (HOOK) { const v = document.getElementById('hookv'); v.src = HOOK.src;
-    await new Promise((res, rej) => { v.onloadeddata = res; v.onerror = () => rej(new Error('hook video failed to load')); v.load() });
+  if (HOOK) { const v = document.getElementById('hookv'); v.src = HOOK.frames + '0001.jpg'; await v.decode();
     const words = (HOOK.text || '').split(' '); document.getElementById('hooktxt').innerHTML = words.map((w, i) => i === words.length - 1 ? `<em>${esc(w)}</em>` : esc(w)).join(' ') }
   const st = document.getElementById('stage');
   cfg.beats.forEach((b, i) => {
@@ -203,9 +202,8 @@ window.renderAt = t => {
   if (HOOK && t < HOOK.dur) {
     hk.style.display = 'block'; document.getElementById('cap').style.display = 'none';
     const ht = document.getElementById('hooktxt'), q = back(t / .25); ht.style.transform = `scale(${.7 + .3 * q})`; ht.style.opacity = cl(t / .1);
-    const v = document.getElementById('hookv'), want = Math.min(t, v.duration - 0.02);
-    if (Math.abs(v.currentTime - want) < 0.001) return;
-    return new Promise(res => { v.addEventListener('seeked', () => requestAnimationFrame(() => res()), { once: true }); v.currentTime = want });
+    const v = document.getElementById('hookv'), idx = Math.min(HOOK.count, Math.floor(t * HOOK.fps) + 1), src = HOOK.frames + String(idx).padStart(4, '0') + '.jpg';
+    if (v.dataset.idx == idx) return; v.dataset.idx = idx; v.src = src; return v.decode().catch(() => {});
   }
   hk.style.display = 'none'; document.getElementById('cap').style.display = 'block';
 };
