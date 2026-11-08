@@ -1,0 +1,159 @@
+{
+  "type": "explainer",
+  "title": "Ik schreef me in bij 5 lokale webshops",
+  "voice_id": "Xgbhok2GeC7jChQ5TJEl",
+  "music": "music/minimal-ambient.mp3",
+  "music_volume": 0.16,
+  "cta": {
+    "kicker": "Reageer met",
+    "word": "IDEE",
+    "sub": "en ik stuur je gratis 3 pop-up ideeën voor jouw webshop",
+    "seconds": 2.8
+  },
+  "beats": [
+    {
+      "say": "Ik schreef me in als klant bij vijf lokale webshops. Wat ik zag, kost ze elke week klanten.",
+      "visual": {
+        "kind": "big",
+        "text": "5 WEBSHOPS.|1 INBOX.|STILTE.",
+        "accent": 2
+      }
+    },
+    {
+      "say": "Drie van de vijf vragen nergens naar je e-mailadres. Geen pop-up, geen formulier, helemaal niets.",
+      "visual": {
+        "kind": "html",
+        "url": "mijn notities",
+        "h": 800,
+        "html": "<div style='padding:60px;background:#fff;height:800px;box-sizing:border-box'><div style='font:38px IB;color:#111'>Inschrijfformulier gevonden?</div><div style='display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding:26px 30px;border-radius:14px;background:#fdecea'><div style='font:32px ISB;color:#222'>Webshop 1</div><div style='font:34px IB;color:#d31f1f'>NEE</div></div><div style='display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding:26px 30px;border-radius:14px;background:#eaf6ee'><div style='font:32px ISB;color:#222'>Webshop 2</div><div style='font:34px IB;color:#2f8a4a'>JA</div></div><div style='display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding:26px 30px;border-radius:14px;background:#fdecea'><div style='font:32px ISB;color:#222'>Webshop 3</div><div style='font:34px IB;color:#d31f1f'>NEE</div></div><div style='display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding:26px 30px;border-radius:14px;background:#eaf6ee'><div style='font:32px ISB;color:#222'>Webshop 4</div><div style='font:34px IB;color:#2f8a4a'>JA</div></div><div style='display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding:26px 30px;border-radius:14px;background:#fdecea'><div style='font:32px ISB;color:#222'>Webshop 5</div><div style='font:34px IB;color:#d31f1f'>NEE</div></div></div>",
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1.12,
+            -50,
+            -30
+          ]
+        ]
+      }
+    },
+    {
+      "say": "En één webshop schrijft je wel in, maar stuurt daarna een hele week helemaal niets.",
+      "visual": {
+        "kind": "inbox",
+        "url": "mail.google.com",
+        "title": "Inbox",
+        "note": "week na inschrijving",
+        "rows": [
+          {
+            "from": "Bol.com",
+            "subject": "Je pakket is onderweg",
+            "time": "08:12"
+          },
+          {
+            "from": "Lokale webshop",
+            "subject": "(niets ontvangen)",
+            "time": "-"
+          },
+          {
+            "from": "Spotify",
+            "subject": "Je mix van de week",
+            "time": "07:40"
+          },
+          {
+            "from": "Zalando",
+            "subject": "Nieuwe collectie binnen",
+            "time": "gisteren"
+          }
+        ],
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1.1,
+            -10,
+            -20
+          ]
+        ]
+      }
+    },
+    {
+      "say": "Elke bezoeker die vertrekt zonder e-mailadres, zie je waarschijnlijk nooit meer terug. Je betaalde voor die bezoeker, en hij is weg.",
+      "visual": {
+        "kind": "big",
+        "text": "BEZOEKER WEG.|KLANT|WEG.",
+        "accent": 2
+      }
+    },
+    {
+      "say": "De oplossing is simpel. Een pop-up met een echte reden om in te schrijven, en meteen een welkomstmail.",
+      "label": "DE OPLOSSING",
+      "visual": {
+        "kind": "flow",
+        "url": "klaviyo.com/flows",
+        "title": "Welkomstreeks",
+        "h": 900,
+        "steps": [
+          {
+            "type": "trigger",
+            "text": "Pop-up: gratis zetgids",
+            "sub": "Op je webshop"
+          },
+          {
+            "type": "email",
+            "text": "Welkom + je gids",
+            "sub": "Binnen 5 minuten"
+          },
+          {
+            "type": "wait",
+            "text": "Wacht 2 dagen"
+          },
+          {
+            "type": "email",
+            "text": "Ons verhaal",
+            "sub": "Waarom wij"
+          }
+        ],
+        "cursor": {
+          "x": 480,
+          "y": 330,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Eén keer instellen. Dan groeit je lijst elke dag vanzelf, ook als jij slaapt. En elke nieuwe inschrijver krijgt meteen een reden om te kopen.",
+      "visual": {
+        "kind": "stat",
+        "url": "klaviyo.com/dashboard",
+        "label": "Voorbeeld: nieuwe inschrijvers per maand",
+        "value": 120,
+        "suffix": " inschrijvers",
+        "h": 640,
+        "trend": [
+          2,
+          4,
+          5,
+          7,
+          8,
+          10,
+          11,
+          13,
+          14,
+          16
+        ]
+      }
+    }
+  ],
+  "hook_text": "Ik testte 5 lokale webshops als klant"
+}

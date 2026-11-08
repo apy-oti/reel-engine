@@ -1,0 +1,182 @@
+{
+  "type": "explainer",
+  "title": "Gratis Inbox Audit: zo werkt het",
+  "voice_id": "Xgbhok2GeC7jChQ5TJEl",
+  "music": "music/lofi-chill-hop.mp3",
+  "music_volume": 0.14,
+  "cta": {
+    "kicker": "Reageer met",
+    "word": "AUDIT",
+    "sub": "en ik check gratis jouw webshop",
+    "seconds": 2.8
+  },
+  "beats": [
+    {
+      "say": "Wat krijgt een nieuwe klant van jouw webshop in zijn inbox? De meeste eigenaars weten het niet.",
+      "visual": {
+        "kind": "big",
+        "text": "WAT KRIJGT|JE KLANT|VAN JOU?",
+        "accent": 2
+      }
+    },
+    {
+      "say": "Je betaalt voor elke bezoeker op je webshop. En daarna hoort die vaak nooit meer iets van je.",
+      "visual": {
+        "kind": "stat",
+        "url": "jouwwebshop.be/statistieken",
+        "label": "Voorbeeld: bezoekers deze maand",
+        "value": 2400,
+        "suffix": " bezoekers",
+        "h": 640,
+        "trend": [
+          4,
+          5,
+          5,
+          6,
+          7,
+          7,
+          8,
+          9,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "say": "Ik zoek het gratis voor je uit. Eén. Ik schrijf me in als klant, gewoon zoals iedereen.",
+      "label": "1. IK SCHRIJF ME IN",
+      "visual": {
+        "kind": "html",
+        "url": "jouwkoffiebar.be",
+        "h": 820,
+        "html": "<div style='position:relative;height:820px;background:#3a2618'><div style='position:absolute;inset:0;background:linear-gradient(#4a3020,#21140c)'></div><div style='position:absolute;left:110px;top:140px;width:740px;background:#fff;border-radius:18px;padding:50px;box-sizing:border-box;text-align:center'><div style='font:46px IB;color:#111'>Word lid van de koffieclub</div><div style='font:28px IM;color:#555;margin-top:18px;line-height:1.4'>Schrijf je in en krijg als eerste onze nieuwe oogst.</div><div style='margin-top:34px;border:2px solid #ddd;border-radius:10px;padding:22px;font:26px IM;color:#333;text-align:left'>apy@owntheinbox.co</div><div style='margin-top:20px;background:#6b3f1f;color:#fff;border-radius:10px;padding:24px;font:30px IBD'>Inschrijven</div></div></div>",
+        "cursor": {
+          "x": 480,
+          "y": 620,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Twee. Ik wacht drie dagen en kijk precies wat er in mijn inbox binnenkomt.",
+      "label": "2. IK WACHT 3 DAGEN",
+      "visual": {
+        "kind": "inbox",
+        "url": "mail.google.com",
+        "title": "Inbox",
+        "note": "3 dagen na inschrijving",
+        "rows": [
+          {
+            "from": "Jouw koffiebar",
+            "subject": "Bevestig je inschrijving",
+            "time": "dag 1",
+            "unread": true
+          },
+          {
+            "from": "Jouw koffiebar",
+            "subject": "(niets ontvangen)",
+            "time": "dag 2"
+          },
+          {
+            "from": "Jouw koffiebar",
+            "subject": "(niets ontvangen)",
+            "time": "dag 3"
+          }
+        ],
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1.1,
+            -10,
+            -10
+          ]
+        ]
+      }
+    },
+    {
+      "say": "Drie. Je krijgt de screenshots. Wat kwam er binnen, en wat ontbrak.",
+      "label": "3. JE KRIJGT SCREENSHOTS",
+      "visual": {
+        "kind": "email",
+        "url": "inbox",
+        "color": "#ff5c36",
+        "hero": "Je audit",
+        "headline": "Dit kwam binnen. Dit ontbrak.",
+        "body": "Geen welkomstmail. Geen herinnering bij je mandje. Geen reden om terug te komen.",
+        "button": "Bekijk de screenshots",
+        "h": 860,
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            0.6,
+            1.2,
+            -90,
+            -40
+          ],
+          [
+            1,
+            1.2,
+            -90,
+            -150
+          ]
+        ]
+      }
+    },
+    {
+      "say": "Vier. Een kort gesprek van vijftien minuten. Ik toon je welke mails ik zou bouwen, en in welke volgorde.",
+      "label": "4. 15 MINUTEN",
+      "visual": {
+        "kind": "flow",
+        "url": "klaviyo.com/flows",
+        "title": "Wat ik zou bouwen",
+        "h": 900,
+        "steps": [
+          {
+            "type": "trigger",
+            "text": "Schrijft zich in",
+            "sub": "Pop-up op je webshop"
+          },
+          {
+            "type": "email",
+            "text": "Welkomstmail",
+            "sub": "Binnen 5 minuten"
+          },
+          {
+            "type": "wait",
+            "text": "Mandje laten staan"
+          },
+          {
+            "type": "email",
+            "text": "Herinnering na 1 uur",
+            "sub": "1 knop terug"
+          }
+        ],
+        "cursor": {
+          "x": 480,
+          "y": 330,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Geen kosten en geen verkooppraatje. Jij krijgt de screenshots en beslist zelf wat je ermee doet.",
+      "visual": {
+        "kind": "big",
+        "text": "GRATIS.|15 MINUTEN.|GEEN PRAATJE.",
+        "accent": 0
+      }
+    }
+  ],
+  "hook_text": "Wat krijgt jouw klant in zijn inbox?"
+}

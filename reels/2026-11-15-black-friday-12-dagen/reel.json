@@ -1,0 +1,185 @@
+{
+  "type": "explainer",
+  "title": "Black Friday is over 12 dagen",
+  "voice_id": "Xgbhok2GeC7jChQ5TJEl",
+  "music": "music/promo-funk.mp3",
+  "music_volume": 0.12,
+  "cta": {
+    "kicker": "Reageer met",
+    "word": "LIJST",
+    "sub": "en ik stuur je gratis de Black Friday checklist",
+    "seconds": 2.8
+  },
+  "beats": [
+    {
+      "say": "Black Friday is over twaalf dagen. En advertenties worden nu elke dag duurder.",
+      "visual": {
+        "kind": "big",
+        "text": "NOG 12 DAGEN.|ADS WORDEN|DUURDER.",
+        "accent": 0
+      }
+    },
+    {
+      "say": "Je e-maillijst kost niets extra. Geen algoritme ertussen, elke mail komt gewoon aan bij mensen die jou al kennen.",
+      "visual": {
+        "kind": "inbox",
+        "url": "mail.google.com",
+        "title": "Inbox",
+        "note": "",
+        "rows": [
+          {
+            "from": "Jouw koffiebar",
+            "subject": "Black Friday: jij bent eerst",
+            "time": "10:00",
+            "unread": true
+          },
+          {
+            "from": "Bol.com",
+            "subject": "Je pakket is onderweg",
+            "time": "08:12"
+          },
+          {
+            "from": "Spotify",
+            "subject": "Je mix van de week",
+            "time": "07:40"
+          }
+        ],
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1.3,
+            -40,
+            -40
+          ]
+        ],
+        "cursor": {
+          "x": 420,
+          "y": 130,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Drie dingen die je deze week nog regelt. Eén. Splits je lijst. Vaste klanten krijgen iets anders dan nieuwe.",
+      "label": "1. SPLITS JE LIJST",
+      "visual": {
+        "kind": "flow",
+        "url": "klaviyo.com/segments",
+        "title": "Black Friday",
+        "h": 900,
+        "steps": [
+          {
+            "type": "trigger",
+            "text": "Je hele lijst"
+          },
+          {
+            "type": "split",
+            "text": "Al eens gekocht?"
+          },
+          {
+            "type": "email",
+            "text": "Vaste klant",
+            "sub": "24 uur vroege toegang"
+          },
+          {
+            "type": "email",
+            "text": "Nieuwe inschrijver",
+            "sub": "Welkomstaanbod"
+          }
+        ]
+      }
+    },
+    {
+      "say": "Twee. Plan drie mails. Een aankondiging, de dag zelf, en een laatste kans.",
+      "label": "2. PLAN 3 MAILS",
+      "visual": {
+        "kind": "html",
+        "url": "jouw planning",
+        "h": 820,
+        "html": "<div style='padding:60px;background:#fff8e6;height:820px;box-sizing:border-box'><div style='font:38px IB;color:#111'>November</div><div style='display:flex;gap:30px;align-items:center;margin-top:34px;background:#fff;border-radius:16px;padding:30px;box-shadow:0 6px 20px rgba(0,0,0,.08)'><div style='width:150px;font:34px IB;color:#ff5c36'>di 24</div><div><div style='font:32px ISB;color:#222'>Aankondiging</div><div style='font:24px IM;color:#777;margin-top:8px'>Je lijst hoort het eerst</div></div></div><div style='display:flex;gap:30px;align-items:center;margin-top:34px;background:#fff;border-radius:16px;padding:30px;box-shadow:0 6px 20px rgba(0,0,0,.08)'><div style='width:150px;font:34px IB;color:#ff5c36'>vr 27</div><div><div style='font:32px ISB;color:#222'>De dag zelf</div><div style='font:24px IM;color:#777;margin-top:8px'>Black Friday</div></div></div><div style='display:flex;gap:30px;align-items:center;margin-top:34px;background:#fff;border-radius:16px;padding:30px;box-shadow:0 6px 20px rgba(0,0,0,.08)'><div style='width:150px;font:34px IB;color:#ff5c36'>ma 30</div><div><div style='font:32px ISB;color:#222'>Laatste kans</div><div style='font:24px IM;color:#777;margin-top:8px'>Nog 1 dag</div></div></div></div>",
+        "cursor": {
+          "x": 420,
+          "y": 560,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Drie. Zet je mandjesherinnering aan. Op drukke dagen blijven veel mandjes staan, en één mail haalt een deel terug.",
+      "label": "3. MANDJESMAIL AAN",
+      "visual": {
+        "kind": "email",
+        "url": "inbox",
+        "color": "#6b3f1f",
+        "hero": "Vergeten?",
+        "headline": "Je cadeaupakket wacht nog op je",
+        "body": "Koffie en chocolade, klaar om te geven. Rond je bestelling af voor het op is.",
+        "button": "Terug naar mijn mandje",
+        "h": 860,
+        "zoom": [
+          [
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            0.6,
+            1.25,
+            -110,
+            -40
+          ],
+          [
+            1,
+            1.25,
+            -110,
+            -160
+          ]
+        ],
+        "cursor": {
+          "x": 330,
+          "y": 760,
+          "click": 0.8
+        }
+      }
+    },
+    {
+      "say": "Zo verdien je meer aan klanten die je al hebt, zonder een euro extra aan advertenties.",
+      "visual": {
+        "kind": "stat",
+        "url": "klaviyo.com/dashboard",
+        "label": "Voorbeeld: omzet uit mail, Black Friday week",
+        "value": 1850,
+        "prefix": "€ ",
+        "h": 640,
+        "trend": [
+          3,
+          3,
+          4,
+          5,
+          5,
+          7,
+          9,
+          12,
+          15,
+          18
+        ]
+      }
+    },
+    {
+      "say": "Advertenties huur je. Je lijst is van jou.",
+      "visual": {
+        "kind": "big",
+        "text": "ADS HUUR JE.|JE LIJST|IS VAN JOU.",
+        "accent": 2
+      }
+    }
+  ],
+  "hook_text": "Black Friday is over 12 dagen"
+}
