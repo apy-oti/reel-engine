@@ -1,0 +1,153 @@
+{
+  "type": "explainer",
+  "title": "Zo werkt een goede herbestelmail",
+  "voice_id": "Xgbhok2GeC7jChQ5TJEl",
+  "music": "music/minimal-ambient.mp3",
+  "music_volume": 0.14,
+  "hook_text": "Het voer is op. Waar bestelt je klant?",
+  "cta": {
+    "kicker": "Reageer met",
+    "word": "FLOW",
+    "sub": "en ik stuur je gratis het voorbeeld van deze mail",
+    "seconds": 2.8
+  },
+  "beats": [
+    {
+      "say": "Een zak hondenvoer van twaalf kilo is na ongeveer zes weken op.",
+      "visual": {
+        "kind": "big",
+        "text": "12 KILO.|6 WEKEN.|OP.",
+        "accent": 2
+      }
+    },
+    {
+      "say": "En net dan hoort je klant niets van jou. Wel van de grote webshops met korting.",
+      "visual": {
+        "kind": "inbox",
+        "url": "mail.google.com",
+        "title": "Inbox",
+        "note": "week 6",
+        "rows": [
+          {
+            "from": "Grote dierenwebshop",
+            "subject": "Nu 20% korting op hondenvoer",
+            "time": "09:02",
+            "unread": true
+          },
+          {
+            "from": "Bol.com",
+            "subject": "Je pakket is onderweg",
+            "time": "08:12"
+          },
+          {
+            "from": "Jouw dierenwinkel",
+            "subject": "(niets sinds de bestelling)",
+            "time": "-"
+          },
+          {
+            "from": "Spotify",
+            "subject": "Je mix van de week",
+            "time": "gisteren"
+          }
+        ],
+        "zoom": [
+          [0, 1, 0, 0],
+          [1, 1.2, -60, -30]
+        ]
+      }
+    },
+    {
+      "say": "Dus bestelt hij waar hij op dat moment toevallig is.",
+      "visual": {
+        "kind": "big",
+        "text": "HIJ BESTELT|WAAR HIJ|DAN IS.",
+        "accent": 0
+      }
+    },
+    {
+      "say": "De oplossing is een herbestelmail. Vijf weken na de bestelling gaat er automatisch een seintje uit.",
+      "label": "DE HERBESTELMAIL",
+      "visual": {
+        "kind": "flow",
+        "url": "klaviyo.com/flows",
+        "title": "Herbestelling hondenvoer",
+        "h": 900,
+        "steps": [
+          {
+            "type": "trigger",
+            "text": "Voer besteld",
+            "sub": "Zak van 12 kg"
+          },
+          {
+            "type": "wait",
+            "text": "Wacht 5 weken"
+          },
+          {
+            "type": "email",
+            "text": "Bijna op? Bestel opnieuw",
+            "sub": "Met de naam van de hond"
+          },
+          {
+            "type": "split",
+            "text": "Opnieuw besteld?"
+          }
+        ],
+        "cursor": {
+          "x": 480,
+          "y": 560,
+          "click": 0.75
+        }
+      }
+    },
+    {
+      "say": "Met de naam van de hond, en één knop. Dezelfde zak, opnieuw in het mandje.",
+      "visual": {
+        "kind": "email",
+        "url": "inbox",
+        "color": "#E8522F",
+        "hero": "Bijna op?",
+        "headline": "Is het voer van Max bijna op?",
+        "body": "Zijn zak van 12 kilo raakt deze week leeg. Bestel nu en dezelfde zak staat overmorgen bij je thuis.",
+        "button": "Bestel dezelfde zak",
+        "h": 860,
+        "zoom": [
+          [0, 1, 0, 0],
+          [0.5, 1.2, -90, -60],
+          [1, 1.2, -90, -180]
+        ],
+        "cursor": {
+          "x": 300,
+          "y": 760,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Het geheim is de timing. Niet na een maand, maar net voor de zak leeg is.",
+      "label": "TIMING",
+      "visual": {
+        "kind": "html",
+        "url": "jouw planning",
+        "h": 820,
+        "html": "<div style='padding:60px;background:#FFF3EE;height:820px;box-sizing:border-box'><div style='font:38px IB;color:#151515'>Zak van 12 kg</div><div style='display:flex;gap:30px;align-items:center;margin-top:34px;background:#fff;border-radius:16px;padding:30px;box-shadow:0 6px 20px rgba(0,0,0,.08)'><div style='width:170px;font:34px IB;color:#7A766E'>week 1</div><div><div style='font:32px ISB;color:#222'>Bestelling</div><div style='font:24px IM;color:#777;margin-top:8px'>De zak komt aan</div></div></div><div style='display:flex;gap:30px;align-items:center;margin-top:34px;background:#fff;border-radius:16px;padding:30px;box-shadow:0 6px 20px rgba(0,0,0,.08);border:3px solid #E8522F'><div style='width:170px;font:34px IB;color:#E8522F'>week 5</div><div><div style='font:32px ISB;color:#222'>Herbestelmail</div><div style='font:24px IM;color:#777;margin-top:8px'>Nog een paar dagen voer</div></div></div><div style='display:flex;gap:30px;align-items:center;margin-top:34px;background:#fff;border-radius:16px;padding:30px;box-shadow:0 6px 20px rgba(0,0,0,.08)'><div style='width:170px;font:34px IB;color:#7A766E'>week 6</div><div><div style='font:32px ISB;color:#222'>Zak leeg</div><div style='font:24px IM;color:#777;margin-top:8px'>Te laat voor een seintje</div></div></div></div>",
+        "cursor": {
+          "x": 420,
+          "y": 420,
+          "click": 0.7
+        }
+      }
+    },
+    {
+      "say": "Eén keer instellen. En elke maand komen je klanten vanzelf terug, bij jou.",
+      "visual": {
+        "kind": "stat",
+        "url": "klaviyo.com/dashboard",
+        "label": "Voorbeeld: herbestellingen per maand",
+        "value": 48,
+        "suffix": " klanten",
+        "h": 640,
+        "trend": [4, 7, 11, 16, 21, 27, 32, 38, 43, 48]
+      }
+    }
+  ]
+}

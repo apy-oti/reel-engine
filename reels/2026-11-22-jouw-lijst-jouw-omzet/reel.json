@@ -1,0 +1,126 @@
+{
+  "type": "explainer",
+  "title": "Jouw lijst, jouw merk, jouw omzet",
+  "voice_id": "Xgbhok2GeC7jChQ5TJEl",
+  "music": "music/promo-funk.mp3",
+  "music_volume": 0.12,
+  "hook_text": "Je betaalt twee keer voor dezelfde klant",
+  "cta": {
+    "kicker": "Reageer met",
+    "word": "AUDIT",
+    "sub": "en ik check gratis welke mails jouw webshop mist",
+    "seconds": 2.8
+  },
+  "beats": [
+    {
+      "say": "Je betaalt voor elke nieuwe klant. En dan betaal je nog eens om diezelfde klant terug te halen.",
+      "visual": {
+        "kind": "big",
+        "text": "JE BETAALT|TWEE KEER|VOOR 1 KLANT.",
+        "accent": 1
+      }
+    },
+    {
+      "say": "Een advertentie, een klik, een eerste bestelling. Dat kost je al snel een paar tientjes.",
+      "visual": {
+        "kind": "stat",
+        "url": "ads.manager",
+        "label": "Voorbeeld: kost per nieuwe klant via advertenties",
+        "value": 24,
+        "prefix": "€ ",
+        "h": 640,
+        "trend": [12, 14, 15, 17, 18, 19, 21, 22, 23, 24]
+      }
+    },
+    {
+      "say": "En daarna? Stilte. Je klant hoort niets meer van je, tot hij je vergeten is.",
+      "visual": {
+        "kind": "inbox",
+        "url": "mail.google.com",
+        "title": "Inbox",
+        "note": "30 dagen na de bestelling",
+        "rows": [
+          {
+            "from": "Jouw webshop",
+            "subject": "Je bestelling is verzonden",
+            "time": "1 okt"
+          },
+          {
+            "from": "Jouw webshop",
+            "subject": "(niets meer)",
+            "time": "-"
+          },
+          {
+            "from": "Bol.com",
+            "subject": "Aanbevolen voor jou",
+            "time": "08:12",
+            "unread": true
+          },
+          {
+            "from": "Zalando",
+            "subject": "Nieuwe collectie binnen",
+            "time": "gisteren",
+            "unread": true
+          }
+        ],
+        "zoom": [
+          [0, 1, 0, 0],
+          [1, 1.2, -50, -20]
+        ]
+      }
+    },
+    {
+      "say": "Terwijl je zijn e-mailadres al hebt. Elke mail naar je lijst kost je bijna niets.",
+      "visual": {
+        "kind": "big",
+        "text": "JE HEBT|ZIJN ADRES|AL.",
+        "accent": 1
+      }
+    },
+    {
+      "say": "Dus laat je mails het werk doen. Na de eerste bestelling krijgt je klant automatisch een bedankje, een tip, en een seintje om opnieuw te bestellen.",
+      "label": "NA DE EERSTE BESTELLING",
+      "visual": {
+        "kind": "flow",
+        "url": "klaviyo.com/flows",
+        "title": "Na aankoop",
+        "h": 900,
+        "steps": [
+          {
+            "type": "trigger",
+            "text": "Eerste bestelling",
+            "sub": "Nieuwe klant"
+          },
+          {
+            "type": "email",
+            "text": "Bedankt, en dit is ons verhaal",
+            "sub": "Dag 1"
+          },
+          {
+            "type": "email",
+            "text": "Haal er meer uit",
+            "sub": "Dag 7, een tip"
+          },
+          {
+            "type": "email",
+            "text": "Tijd om bij te bestellen?",
+            "sub": "Dag 30"
+          }
+        ],
+        "cursor": {
+          "x": 480,
+          "y": 700,
+          "click": 0.8
+        }
+      }
+    },
+    {
+      "say": "Advertenties huur je. Je lijst is van jou. Jouw merk, jouw omzet, automatisch.",
+      "visual": {
+        "kind": "big",
+        "text": "JOUW LIJST.|JOUW MERK.|JOUW OMZET.",
+        "accent": 2
+      }
+    }
+  ]
+}
